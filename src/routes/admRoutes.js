@@ -1625,9 +1625,8 @@ admRoutes.delete('/entity_params/:id', (request, response) => {
 })
 
 
-
 admRoutes.get('/users', (request, response) => {
-  let sql = "SELECT a.id,email,a.name,phoneNumber,cellPhone,b.role,"
+  let sql = "SELECT a.id,email,a.name,phoneNumber,cellPhone,b.role,entity_f,"
   sql += " CASE WHEN a.is_new THEN 'Si' ELSE 'No' END as is_new,"
   sql += " CASE WHEN a.is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM users a"
@@ -1696,7 +1695,7 @@ admRoutes.post('/users', async (request, response) => {
 admRoutes.put('/users', (request, response) => {
   let sql = "UPDATE users SET id_role=?,email=?,entity_f=?,name=?,"
   sql += " address=?,phoneNumber=?,cellPhone=?,is_new=?,is_active=?"
-  sql += " WHERE id=? AND id <> 1"
+  sql += " WHERE id=?"
 
   const {id,id_role,email,entity_f,name,address,phoneNumber,cellPhone,is_new,is_active} = request.body
   const params = [id_role,email,entity_f,name,address,phoneNumber,cellPhone,is_new === 'Si' ? true : false,is_active === 'Si' ? true : false, id]

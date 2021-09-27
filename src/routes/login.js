@@ -54,10 +54,10 @@ loginRouter.get('/new-user/:email',  (request, response) => {
 })
 
 loginRouter.get('/:email/:password',  (request, response) => {
-  let sql = "SELECT id, hash, name, is_active, is_new"
-   sql += " FROM users"
+  let sql = "SELECT a.id, hash, a.name, a.is_active, is_new, id_role as Role, coalesce(id_ruta, 0) as Ruta"
+   sql += " FROM users a left join entities_f b on a.entity_f = b.id"
    sql += " WHERE email=?"
-   sql += " AND (is_active = true OR id_role = 1)"
+   sql += " AND (a.is_active = true OR id_role = 1)"
  
    const {email, password} = request.params
    const params = [email]
@@ -68,7 +68,7 @@ loginRouter.get('/:email/:password',  (request, response) => {
        response.status(500)
      } 
      if (rows.length > 0) {   
-       const {id, hash, name, is_active} = rows[0]  
+       const {id, hash, name, is_active, Role, Ruta} = rows[0]  
        if(!is_active){
          logger.error('Error Status:', 'Usuario Bloqueado.')
          return response.json({message: 'Usuario Bloqueado.  Llame al Administrador!', token: ''})
@@ -77,10 +77,10 @@ loginRouter.get('/:email/:password',  (request, response) => {
        if(validPass){
          const userForToken = {
            username: name,
-           id: id
+           id: id,
          }
          const token = jwt.sign(userForToken, process.env.SECRET)
-         response.status(200).json({userName: name, token})
+         response.status(200).json({userName: name, token, Role, Ruta})
        } else {
          // const hash = await bcrypt.hash('123456', 10)
          console.log(hash);
