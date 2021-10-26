@@ -463,7 +463,7 @@ appRoutes.get('/nationality', (request, response) => {
 })
 
 appRoutes.get('/entities_f', (request, response) => {
-  const sql = "SELECT id, name, id_ruta FROM entities_f WHERE is_active = true"
+  const sql = "SELECT id, name, id_ruta FROM entities_f " //WHERE is_active = true"
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
