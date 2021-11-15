@@ -1,7 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const appRoutes = require('./src/routes/appRoutes')
 const middleware = require('./src/utils/middlerware')
 const usersRouter = require('./src/routes/users')
 const fileRoutes = require('./src/routes/uploadFile')
@@ -21,7 +20,6 @@ app.use(middleware.requestLogger)
 
 app.use('/api/login', loginRouter)
 app.use('/api/users', usersRouter)
-app.use('/api', appRoutes)
 app.use('/upload', fileRoutes)
 app.use('/adm', admRoutes)
 

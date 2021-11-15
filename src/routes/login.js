@@ -20,7 +20,7 @@ loginRouter.get('/users', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -42,7 +42,7 @@ loginRouter.get('/new-user/:email',  (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -64,7 +64,7 @@ loginRouter.get('/:email/:password',  (request, response) => {
  
    config.cnn.query(sql, params, async (error, rows, fields) => {
      if (error) {
-       logger.error('Error SQL:', error.sqlMessage)
+       logger.error('Error SQL:', error.message)
        response.status(500)
      } 
      if (rows.length > 0) {   
@@ -80,7 +80,7 @@ loginRouter.get('/:email/:password',  (request, response) => {
            id: id,
          }
          const token = jwt.sign(userForToken, process.env.SECRET)
-         response.status(200).json({userName: name, token, Role, Ruta})
+         response.status(200).json({userName: name, token, Role, Ruta, idUser: id})
        } else {
          // const hash = await bcrypt.hash('123456', 10)
          console.log(hash);
@@ -120,7 +120,7 @@ loginRouter.put('/chgpwd', async (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')

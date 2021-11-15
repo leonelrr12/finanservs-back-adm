@@ -9,155 +9,9 @@ const Maribet = require('../data/Maribet')
 const Milagros = require('../data/Milagros')
 
 
-
 appRoutes.get('/', (request, response) => {
   response.send('Hola Mundo!!!')
 })
-
-appRoutes.get('/today-is', (request, response) => {
-  const dt1 = new Date()
-  const dt2 = new Intl.DateTimeFormat('es-ES',{dateStyle: 'full'}).format(dt1)
-  response.json({ hoyes: dt2 })
-})
-
-
-appRoutes.get('/APC', (request, response) => {
-  // response.json(America())
-  // response.json(Beny())
-  // response.json(Joann())
-  response.json(Maribet())
-  // response.json(Milagros())
-})
-
-
-appRoutes.get('/APC-BK', (request, response) => {
-  response.json([
-    {
-      institucion: "GLOBAL BANK",
-      referencia: "2018223030",
-      tipoObligacion: "HIPOTECA",
-      saldoActual: 74216.20,
-      letra: 312.12,
-      formaPago: "DESCUENTO DIRECTO",
-      diasAtraso: "0",
-      contometro: "1".repeat(24),
-      score: 0
-    },
-    {
-      institucion: "BANISTMO",
-      referencia: "2019569157",
-      tipoObligacion: "PREST. AUTO",
-      saldoActual: 5000.00,
-      letra: 50.00,
-      formaPago: "DESCUENTO DIRECTO",
-      diasAtraso: "0",
-      contometro: "1".repeat(20)+"2233",
-      score: 0
-    },
-    {
-      institucion: "BANISI",
-      referencia: "2019569156",
-      tipoObligacion: "PREST. PERSONAL",
-      saldoActual: 14005.70,
-      letra: 100.00,
-      formaPago: "DESCUENTO DIRECTO",
-      diasAtraso: "0",
-      contometro: "1".repeat(20)+"3333",
-      score: 0
-    },
-    {
-      institucion: "GENERAL",
-      referencia: "2019569159",
-      tipoObligacion: "PREST. PERSONAL",
-      saldoActual: 600.00,
-      letra: 50.00,
-      formaPago: "PAGOS VOLUNTARIOS",
-      diasAtraso: "0",
-      contometro: "1".repeat(24),
-      score: 0
-    },
-    {
-      institucion: "BANISI",
-      referencia: "2019569160",
-      tipoObligacion: "TARJ. CREDITO",
-      saldoActual: 500.00,
-      letra: 27.00,
-      formaPago: "DESCUENTO DIRECTO",
-      diasAtraso: "0",
-      contometro: "1".repeat(24),
-      score: 0
-    },
-])
-})
-
-
-appRoutes.post('/APC', (request, response) => {
-
-
-  // https://estebanfuentealba.wordpress.com/2010/01/09/crear-dll-en-c-net-y-llamarla-desde-javascript/
-  //   <html>
-  //     <head>
-  //         <script type="text/javascript">
-  //             /* Creando una instancia de ActiveXObject para poder acceder a nuestra libreria */
-  //             var obj = new ActiveXObject("TestLib.Class"); /* ProgId de la Clase */
-  //             alert(obj.Hola()); /* llamando al metodo Hola de la DLL */
-  //         </script>
-  //     </head>
-  //     <body>
-  //         <!-- Cuerpo -->
-  //     </body>
-  // </html>
-
-
-  const { usuario, clave, cliente, tipo, producto } = request.body
-  
-  //   <GetScore xmlns="https://www.apc.com.pa/Webservices/classicScorePlusService">
-
-    let sr = `<?xml version="1.0" encoding="utf-8"?>
-      <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <soap:Body>
-      <GetScore xmlns="https://www.apc.com.pa/Webservices">
-      <usuarioconsulta>${usuario}</usuarioconsulta>
-      <claveConsulta>${clave}</claveConsulta>
-      <IdentCliente>${cliente}</IdentCliente>
-      <TipoCliente>${tipo}</TipoCliente>
-      <Producto>${producto}</Producto>
-      </GetScore>
-      </soap:Body>
-      </soap:Envelope>`
-
-    let xmlhttp = new XMLHttpRequest()
-    xmlhttp.open('post',"https://www.apc.com.pa/Webservices", true )
-    // xmlhttp.open('post',"https://www.mozilla.org/es-ES/", true )
-    // xmlhttp.onreadystatechange = function () {
-    //     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-    //         console.log(xmlhttp.responseText);
-    //     }
-    // };
-    xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-    xmlhttp.send(sr); 
-
-    console.log('Paso 4');
-    // 4. Esto se llamará después de que la respuesta se reciba
-    xmlhttp.onload = function() {
-      console.log('xmlhttp.status',xmlhttp.status);
-      if (xmlhttp.status != 200) { // analiza el estado HTTP de la respuesta
-        console.log(`Error ${xmlhttp.status}: ${xmlhttp.statusText}`); // ej. 404: No encontrado
-      } else { // muestra el resultado
-        console.log(`Hecho, obtenidos ${xmlhttp.responseText.length} bytes`); // Respuesta del servidor
-        // console.log(xmlhttp.responseText);
-      }
-    }
-
-    response.send('Finish!')
-})
-
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
 
 appRoutes.get('/sectors', (request, response) => {
   const sql = "SELECT * FROM sectors"
@@ -419,7 +273,7 @@ appRoutes.get('/type_documents', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -435,7 +289,7 @@ appRoutes.get('/terms_loan', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -451,7 +305,7 @@ appRoutes.get('/nationality', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -467,7 +321,7 @@ appRoutes.get('/entities_f', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -487,7 +341,7 @@ appRoutes.get('/sector_profesion', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {

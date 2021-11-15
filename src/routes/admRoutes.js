@@ -17,7 +17,7 @@ admRoutes.get('/prospects_sign/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -38,8 +38,8 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " e.name as 'Sector',f.name as Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'Ocupación',"
   sql += " salary as Salario, loanPP as 'Préstamo Personal', cashOnHand as 'Efectivo en Mano', plazo as Plazo,"
   sql += " loanAuto as 'Préstamo Automóvil', loanTC as 'Préstamo TC', loanHip as 'Préstamo Hipoteca',"
-  sql += " d.name as 'Contrato Trabajo', email as Email,"
-  sql += " a.cellphone as Celular, phoneNumber as 'Télefono', b.name as Entidad, "
+  sql += " d.name as 'Contrato Trabajo', a.email as Email,"
+  sql += " a.cellphone as Celular, a.phoneNumber as 'Télefono', b.name as Entidad, "
   sql += " CASE WHEN gender='female' THEN 'Mujer' ELSE 'Hombre' END as Genero, birthDate as 'Fecha Nacimiento',"
   sql += " l.name as 'Fecuencia Pago', g.name as 'Tipo Residencia',"
   sql += " k.name as 'Estado Civil', h.name as Provincia, i.name as Distrito, j.name as Corregimiento,"
@@ -47,7 +47,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " idUrl as '_Cédula',	socialSecurityProofUrl as '_Ficha Seguro Social', payStubUrl as '_Comprobante de Pago',"
   sql += " publicGoodProofUrl as '_Recibo Entidad Publica',	workLetterUrl as '_Carta de Trabajo',"
   sql += " apcLetterUrl as '_Autorización APC', apcReferenceUrl as '_Referencias APC',"
-  sql += " m.name as Ejecutivo, comengtarios as Comentarios "
+  sql += " o.name as Ejecutivo, comentarios as Comentarios "
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
   sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
@@ -62,15 +62,14 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " LEFT JOIN counties j ON j.id=a.residenceType"
   sql += " LEFT JOIN civil_status k ON k.id=a.civil_status"
   sql += " LEFT JOIN payments l ON l.id=a.paymentFrecuency"
-  sql += " LEFT JOIN users ON m.id=a.ejecutivo"
-  sql += " WHERE entity_f = ?;"
+  sql += " LEFT JOIN users o ON o.id=a.ejecutivo"
+  sql += " WHERE a.entity_f = ?;"
 
-  console.log(sql);
   const params = [request.params.entity_f];
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -88,7 +87,7 @@ admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
  
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -100,14 +99,15 @@ admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
 })
 
 admRoutes.put('/prospects/entity_f', (request, response) => {
-  const sql = "UPDATE prospects SET estado=?, comentarios=?, fupdate=now() WHERE id = ?"
+  const sql = "UPDATE prospects SET estado=?, comentarios=?, ejecutivo=?, fupdate=now() WHERE id = ?"
   
   const body = request.body
-  const params = [body.estado, body.id]
+  const params =  [body.estado, body.comentarios, body.ejecutivo, body.id ]
 
+  console.log(sql,params);
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -121,7 +121,7 @@ admRoutes.get('/sectors', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -139,7 +139,7 @@ admRoutes.get('/sectors/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -154,7 +154,7 @@ admRoutes.post('/sectors', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM sectors"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -166,7 +166,7 @@ admRoutes.post('/sectors', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -182,7 +182,7 @@ admRoutes.put('/sectors', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -195,7 +195,7 @@ admRoutes.delete('/sectors/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -214,7 +214,7 @@ admRoutes.get('/civilstatus', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -232,7 +232,7 @@ admRoutes.get('/civilstatus/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -247,7 +247,7 @@ admRoutes.post('/civilstatus', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM civil_status"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -259,7 +259,7 @@ admRoutes.post('/civilstatus', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -275,7 +275,7 @@ admRoutes.put('/civilstatus', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -288,7 +288,7 @@ admRoutes.delete('/civilstatus/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -307,7 +307,7 @@ admRoutes.get('/profesions', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -325,7 +325,7 @@ admRoutes.get('/profesions/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -340,7 +340,7 @@ admRoutes.post('/profesions', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM profesions"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -352,7 +352,7 @@ admRoutes.post('/profesions', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -368,7 +368,7 @@ admRoutes.put('/profesions', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -381,7 +381,7 @@ admRoutes.delete('/profesions/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -400,7 +400,7 @@ admRoutes.get('/profesions_lw', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -422,7 +422,7 @@ admRoutes.get('/profesions_lw/:page/:linePage', (request, response) => {
   // config.cnn.query(sql, params, (error, results) => {
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -439,7 +439,7 @@ admRoutes.get('/profesions_lw/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -454,7 +454,7 @@ admRoutes.post('/profesions_lw', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM profesions_lw"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -466,7 +466,7 @@ admRoutes.post('/profesions_lw', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -481,7 +481,7 @@ admRoutes.put('/profesions_lw', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -494,7 +494,7 @@ admRoutes.delete('/profesions_lw/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -513,7 +513,7 @@ admRoutes.get('/institutions', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -531,7 +531,7 @@ admRoutes.get('/institutions/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -546,7 +546,7 @@ admRoutes.post('/institutions', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM institutions"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -558,7 +558,7 @@ admRoutes.post('/institutions', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -574,7 +574,7 @@ admRoutes.put('/institutions', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -587,7 +587,7 @@ admRoutes.delete('/institutions/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -606,7 +606,7 @@ admRoutes.get('/planillas_j', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -624,7 +624,7 @@ admRoutes.get('/planillas_j/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -639,7 +639,7 @@ admRoutes.post('/planillas_j', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM planillas_j"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -651,7 +651,7 @@ admRoutes.post('/planillas_j', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -667,7 +667,7 @@ admRoutes.put('/planillas_j', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -680,7 +680,7 @@ admRoutes.delete('/planillas_j/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -699,7 +699,7 @@ admRoutes.get('/housings', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -717,7 +717,7 @@ admRoutes.get('/housings/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -732,7 +732,7 @@ admRoutes.post('/housings', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM housings"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -744,7 +744,7 @@ admRoutes.post('/housings', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -760,7 +760,7 @@ admRoutes.put('/housings', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -773,7 +773,7 @@ admRoutes.delete('/housings/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -792,7 +792,7 @@ admRoutes.get('/purposes', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -810,7 +810,7 @@ admRoutes.get('/purposes/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -825,7 +825,7 @@ admRoutes.post('/purposes', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM purposes"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -837,7 +837,7 @@ admRoutes.post('/purposes', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -853,7 +853,7 @@ admRoutes.put('/purposes', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -866,7 +866,7 @@ admRoutes.delete('/purposes/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -885,7 +885,7 @@ admRoutes.get('/payments', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -903,7 +903,7 @@ admRoutes.get('/payments/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -918,7 +918,7 @@ admRoutes.post('/payments', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM payments"
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     const { id } = results[0]
@@ -930,7 +930,7 @@ admRoutes.post('/payments', (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -946,7 +946,7 @@ admRoutes.put('/payments', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -959,7 +959,7 @@ admRoutes.delete('/payments/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -978,7 +978,7 @@ admRoutes.get('/estados_tramite', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -996,7 +996,7 @@ admRoutes.get('/estados_tramite/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1016,7 +1016,7 @@ admRoutes.post('/estados_tramite', (request, response) => {
   console.log(sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1031,7 +1031,7 @@ admRoutes.put('/estados_tramite', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1044,7 +1044,7 @@ admRoutes.delete('/estados_tramite/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1063,7 +1063,7 @@ admRoutes.get('/type_documents', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1081,7 +1081,7 @@ admRoutes.get('/type_documents/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1100,7 +1100,7 @@ admRoutes.post('/type_documents', (request, response) => {
 
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1115,7 +1115,7 @@ admRoutes.put('/type_documents', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1128,7 +1128,7 @@ admRoutes.delete('/type_documents/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1147,7 +1147,7 @@ admRoutes.get('/terms_loan', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1165,7 +1165,7 @@ admRoutes.get('/terms_loan/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1184,7 +1184,7 @@ admRoutes.post('/terms_loan', (request, response) => {
 
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1199,7 +1199,7 @@ admRoutes.put('/terms_loan', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1212,7 +1212,7 @@ admRoutes.delete('/terms_loan/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1227,13 +1227,13 @@ admRoutes.delete('/terms_loan/:id', (request, response) => {
 
 
 admRoutes.get('/entities_f', (request, response) => {
-  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails"
+  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM entities_f"
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1253,7 +1253,7 @@ admRoutes.get('/entities_f/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1271,7 +1271,7 @@ admRoutes.post('/entities_f', (request, response) => {
 
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     // response.send('Ok!')
@@ -1287,7 +1287,7 @@ admRoutes.put('/entities_f', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1301,7 +1301,7 @@ admRoutes.delete('/entities_f/:id', (request, response) => {
   console.log(sql, params);
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1325,7 +1325,7 @@ admRoutes.get('/sector_profesion', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1343,7 +1343,7 @@ admRoutes.get('/sector_profesion/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1362,7 +1362,7 @@ admRoutes.post('/sector_profesion', (request, response) => {
 
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1377,7 +1377,7 @@ admRoutes.put('/sector_profesion', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1390,7 +1390,7 @@ admRoutes.delete('/sector_profesion/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1421,7 +1421,7 @@ admRoutes.get('/entity_params', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1451,7 +1451,7 @@ admRoutes.get('/entity_params/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1475,7 +1475,7 @@ admRoutes.post('/entity_params', (request, response) => {
   console.log(params, sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1498,7 +1498,7 @@ admRoutes.put('/entity_params', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1511,7 +1511,7 @@ admRoutes.delete('/entity_params/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1534,7 +1534,7 @@ admRoutes.get('/users', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1558,7 +1558,7 @@ admRoutes.get('/users/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1581,7 +1581,7 @@ admRoutes.post('/users', async (request, response) => {
 
     config.cnn.query(sql, params, (error, results, next) => {
       if (error) {
-        logger.error('Error SQL:', error.sqlMessage)
+        logger.error('Error SQL:', error.message)
         response.status(500)
       } 
       response.send('Ok!')
@@ -1601,7 +1601,7 @@ admRoutes.put('/users', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1614,7 +1614,7 @@ admRoutes.delete('/users/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
@@ -1635,7 +1635,7 @@ admRoutes.get('/roles', (request, response) => {
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1655,7 +1655,7 @@ admRoutes.get('/roles/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.length > 0) {
@@ -1676,7 +1676,7 @@ admRoutes.post('/roles', (request, response) => {
   console.log(params, sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1692,7 +1692,7 @@ admRoutes.put('/roles', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     response.send('Ok!')
@@ -1705,7 +1705,7 @@ admRoutes.delete('/roles/:id', (request, response) => {
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
-      logger.error('Error SQL:', error.sqlMessage)
+      logger.error('Error SQL:', error.message)
       response.status(500)
     } 
     if (results.affectedRows > 0) {
