@@ -1,5 +1,7 @@
-const admRoutes = require('express').Router()
+const nodemailer = require("nodemailer");
 const bcrypt = require('bcryptjs')
+
+const admRoutes = require('express').Router()
 const config = require('../utils/config')
 const logger = require('../utils/logger')
 
@@ -7,6 +9,120 @@ const logger = require('../utils/logger')
 admRoutes.get('/', (request, response) => {
   response.send('Hola Mundo!!! Desde Admin Routes')
 })
+
+
+admRoutes.post('/send-email', async (req, res) => {
+
+  const { email: euser, asunto, mensaje, telefono, monto, nombre, banco } = req.body
+
+  let emails = ''
+  // await axios.get(`http://localhost:4001/api/entities_f/${banco}`)
+  // .then(res => {
+  //   const result = res.data
+  //   emails = result[0].emails
+  // }).catch(() => {
+  //   emails = null
+  // })
+
+  // if(emails === undefined) emails = null
+  // if(!emails) {
+  //   console.log("Debe configurar lista de Emails en la Entidad Financiera.")
+  //   return
+  // }
+  emails += "guasimo01@gmail.com"
+
+  nodemailer.createTestAccount(( err, account ) => {
+    const htmlEmail = `
+      <h3>Nuevo Prospecto desde Finanservs.com</h3>
+      <ul>
+        <li>Email: ${euser}</li>
+        <li>Nombre: ${nombre}</li>
+        <li>Teléfono: ${telefono}</li>
+        <li>Monto Solicitado: ${monto}</li>
+      </ul>
+      <h3>Mensaje</h3>
+      <p>${mensaje}</p>
+    `
+  
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: config.EMAIL_PORT,
+      auth: {
+        user: config.EMAIL_USER, 
+        pass: config.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    })
+
+    let mailOptions = {
+      from: config.EMAIL_FROM,
+      to: emails,
+      subject: asunto,
+      text: mensaje,
+      html: htmlEmail
+    }
+
+    transporter.sendMail(mailOptions, ( err, info ) => {
+      if(err) {
+        return console.error("Estamos aqui", err)
+      }
+      console.log("Mensaje enviado: %s", info.envelope)
+      console.log("Url del mensaje: %s", nodemailer.getTestMessageUrl(info))
+    })
+  })
+
+})
+
+
+admRoutes.get("/sponsor/:id", (request, response) => {
+  let sql = "SELECT nombre, apellidos, email, celular";
+  sql += " FROM referidos";
+  sql += " WHERE id in (";
+  sql += " SELECT id_ref FROM referidos";
+  sql += " WHERE id=? )";
+
+  const { id } = request.params;
+  const params = [id];
+
+  config.cnn.query(sql, params, (error, results) => {
+    if (error) {
+      logger.error("Error SQL:", error.message);
+      response.status(500);
+    }
+    if (results && results.length > 0) {
+      response.json(results);
+    } else {
+      response.json([]);
+    }
+  });
+});
+
+admRoutes.get("/red-sponsor", (request, response) => {
+  let sql = "SELECT a.id, id_ref, concat(a.nombre,' ',apellidos) as Nombre, a.email, celular, dateCreated,"
+  sql += " (SELECT concat(nombre,' ',apellidos) FROM finanservs.referidos WHERE id = a.id_ref) as Sponsor,"
+  sql += " coalesce(c.name,'Sin Estado') as Estado, b.fcreate, b.loanPP"
+  sql += " FROM referidos a"
+  sql += " LEFT JOIN prospects b ON b.id_referido = a.id"
+  sql += " LEFT JOIN estados_tramite c ON c.id = b.estado"
+  sql += " WHERE id_Ref > 0"
+  sql += " ORDER BY id_ref"
+
+  config.cnn.query(sql, (error, results) => {
+    if (error) {
+      logger.error("Error SQL:", error.message);
+      response.status(500);
+    }
+    if (results && results.length > 0) {
+      response.json(results);
+    } else {
+      response.json([]);
+    }
+  });
+});
+
+
 
 
 admRoutes.get('/prospects_sign/:id', (request, response) => {
@@ -44,9 +160,15 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " l.name as 'Fecuencia Pago', g.name as 'Tipo Residencia',"
   sql += " k.name as 'Estado Civil', h.name as Provincia, i.name as Distrito, j.name as Corregimiento,"
   sql += " fcreate as 'Creado el',"
-  sql += " idUrl as '_Cédula',	socialSecurityProofUrl as '_Ficha Seguro Social', payStubUrl as '_Comprobante de Pago',"
-  sql += " publicGoodProofUrl as '_Recibo Entidad Publica',	workLetterUrl as '_Carta de Trabajo',"
-  sql += " apcLetterUrl as '_Autorización APC', apcReferenceUrl as '_Referencias APC',"
+  sql += " idUrl as '_Cédula',"
+  
+  sql += " socialSecurityProofUrl as '_Ficha Seguro Social',"
+  sql += " payStubUrl as '_Comprobante de Pago',"
+  sql += " publicGoodProofUrl as '_Recibo Entidad Publica',"
+  sql += " workLetterUrl as '_Carta de Trabajo',"
+  sql += " apcLetterUrl as '_Autorización APC',"
+  sql += " apcReferenceUrl as '_Referencias APC',"
+
   sql += " o.name as Ejecutivo, comentarios as Comentarios "
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
@@ -1245,7 +1367,7 @@ admRoutes.get('/entities_f', (request, response) => {
 })
 
 admRoutes.get('/entities_f/:id', (request, response) => {
-  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails"
+  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM entities_f WHERE id = ?"
 
@@ -1265,7 +1387,7 @@ admRoutes.get('/entities_f/:id', (request, response) => {
 }) 
 
 admRoutes.post('/entities_f', (request, response) => {
-  const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, is_active) VALUES (?, ?, ?, ?, ?, ?)"
+  const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)"
   const {name, id_ruta, contact, phone_number, cellphone, emails, is_active} = request.body
   const params = [name, id_ruta, contact, phone_number, cellphone, emails, is_active === 'Si' ? true : false];
 

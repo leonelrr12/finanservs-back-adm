@@ -6,6 +6,12 @@ const HOST = process.env.HOST
 const AWS_Access_key_ID = process.env.AWS_Access_key_ID
 const AWS_Secret_access_key = process.env.AWS_Secret_access_key
 
+//SMTP gmail
+const EMAIL_USER = process.env.EMAIL_USER
+const EMAIL_PASS = process.env.EMAIL_PASS
+const EMAIL_FROM = process.env.EMAIL_FROM
+const EMAIL_PORT = process.env.EMAIL_PORT
+
 // MySql DIgital Ocean-2
 const cnn = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -60,5 +66,9 @@ module.exports = {
   AWS_Secret_access_key,
   PORT,
   HOST,
-  cnn
+  cnn,
+  EMAIL_USER,
+  EMAIL_PASS,
+  EMAIL_FROM,
+  EMAIL_PORT,  
 }
