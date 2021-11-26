@@ -13,32 +13,31 @@ admRoutes.get('/', (request, response) => {
 
 admRoutes.post('/send-email', async (req, res) => {
 
-  const { email: euser, asunto, mensaje, telefono, monto, nombre, banco } = req.body
+  let { id, email, nombre, cedula, monto, celular, fcreate, dias, asunto, mensaje, email_banco, email_sponsor, estado, comentarios } = req.body
 
-  let emails = ''
-  // await axios.get(`http://localhost:4001/api/entities_f/${banco}`)
-  // .then(res => {
-  //   const result = res.data
-  //   emails = result[0].emails
-  // }).catch(() => {
-  //   emails = null
-  // })
-
-  // if(emails === undefined) emails = null
-  // if(!emails) {
-  //   console.log("Debe configurar lista de Emails en la Entidad Financiera.")
-  //   return
-  // }
-  emails += "guasimo01@gmail.com"
+  let emails = email
+  if(config.EMAIL_FINA.length > 4) emails += ", " + config.EMAIL_FINA
+  if(config.EMAIL_PRUEBA.length > 4) emails += ", " + config.EMAIL_PRUEBA
+  if(email_banco.length > 4) emails += ", " + email_banco
+  if(email_sponsor.length > 4) emails += ", " + email_sponsor
 
   nodemailer.createTestAccount(( err, account ) => {
+    let color = " black;'"
+    if(estado === "Aprobado") color = " green;'"
+    if(estado === "Rechazado") color = " red;'"
+
     const htmlEmail = `
-      <h3>Nuevo Prospecto desde Finanservs.com</h3>
+      <h2 style='color: ${color}>Nuevo Estatus: ${estado}</h2>
       <ul>
-        <li>Email: ${euser}</li>
-        <li>Nombre: ${nombre}</li>
-        <li>Teléfono: ${telefono}</li>
+        <li>Solicitud No.: ${id}</li>
+        <li>Estimado: ${nombre}</li>
+        <li>Cédula No.: ${cedula}</li>
+        <li>Email: ${email}</li>
+        <li>Teléfono: ${celular}</li>
+        <li>Fecha Solicitud: ${fcreate}</li>
         <li>Monto Solicitado: ${monto}</li>
+        <li>Dias transcurridos: ${dias}</li>
+        <li>Comentarios: ${comentarios}</li>
       </ul>
       <h3>Mensaje</h3>
       <p>${mensaje}</p>
@@ -72,8 +71,36 @@ admRoutes.post('/send-email', async (req, res) => {
       console.log("Url del mensaje: %s", nodemailer.getTestMessageUrl(info))
     })
   })
-
 })
+admRoutes.get("/email-estado/:id", (request, response) => {
+  let sql = "SELECT a.id, id_personal as cedula,"
+  sql += " a.name as nombre, a.email as email, a.cellphone as celular,"
+  sql += " loanPP as monto, fcreate, d.name as estado,"
+  sql += " coalesce(b.email,'') as email_sponsor,"
+  sql += " coalesce(c.emails,'') as email_banco,"
+  sql += " coalesce(a.comentarios,'') as comentarios,"
+  sql += " timestampdiff(DAY, a.fcreate, now()) as dias"
+  sql += " FROM prospects a"
+  sql += " LEFT JOIN referidos b ON b.id = a.id_referido"
+  sql += " LEFT JOIN entities_f c ON c.id_ruta = a.entity_f"
+  sql += " LEFT JOIN estados_tramite d ON d.id = a.estado"
+  sql += " WHERE a.id = ?"
+
+  const { id } = request.params;
+  const params = [id];
+
+  config.cnn.query(sql, params, (error, results) => {
+    if (error) {
+      logger.error("Error SQL:", error.message);
+      response.status(500);
+    }
+    if (results && results.length > 0) {
+      response.json(results);
+    } else {
+      response.json([]);
+    }
+  });
+});
 
 
 admRoutes.get("/sponsor/:id", (request, response) => {
@@ -124,7 +151,6 @@ admRoutes.get("/red-sponsor", (request, response) => {
 
 
 
-
 admRoutes.get('/prospects_sign/:id', (request, response) => {
 
   const sql = "SELECT sign FROM prospects WHERE id = ?;"
@@ -146,10 +172,6 @@ admRoutes.get('/prospects_sign/:id', (request, response) => {
 
 
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
-  // sql += " idUrl as imag_id,	socialSecurityProofUrl as 'Ficha Seguro Social', payStubUrl as 'Comprobante de Pago',"
-  // sql += " publicGoodProofUrl as 'Recibo Entidad Publica',	workLetterUrl as 'Carta de Trabajo',"
-  // sql += " quotation,	application,	sign"
-
   sql  = " SELECT a.id as 'ID', c.name as Estado, datediff(now(), fcreate) as 'Dias Antiguedad' ,id_personal as 'Cédula Id', a.name as Nombre,"
   sql += " e.name as 'Sector',f.name as Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'Ocupación',"
   sql += " salary as Salario, loanPP as 'Préstamo Personal', cashOnHand as 'Efectivo en Mano', plazo as Plazo,"
@@ -226,7 +248,6 @@ admRoutes.put('/prospects/entity_f', (request, response) => {
   const body = request.body
   const params =  [body.estado, body.comentarios, body.ejecutivo, body.id ]
 
-  console.log(sql,params);
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)

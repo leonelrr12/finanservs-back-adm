@@ -11,6 +11,8 @@ const EMAIL_USER = process.env.EMAIL_USER
 const EMAIL_PASS = process.env.EMAIL_PASS
 const EMAIL_FROM = process.env.EMAIL_FROM
 const EMAIL_PORT = process.env.EMAIL_PORT
+const EMAIL_FINA = process.env.EMAIL_FINA
+const EMAIL_PRUEBA = process.env.EMAIL_PRUEBA
 
 // MySql DIgital Ocean-2
 const cnn = mysql.createConnection({
@@ -20,38 +22,6 @@ const cnn = mysql.createConnection({
     password: process.env.DB_PWD,
     port: process.env.PORTDB
 })
-
-// // MySql DIgital Ocean
-// const cnn = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     database: process.env.DATABASE,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PWD
-// })
-
-// // MySql de James - IS
-// const cnn = mysql.createConnection({
-//     host: '69.10.63.218',
-//     database: 'finanservs',
-//     user: 'AdminFinanservs',
-//     password: '0t_pYv70'
-// })
-
-// // MySql -->  Dockert
-// const cnn = mysql.createConnection({
-//   host:'localhost',
-//   database:'finanservs',
-//   user:'rsanchez',
-//   password:'cafekotowa'
-// })
-
-// // MySql clever-cloud.com
-// const cnn = mysql.createConnection({
-//   host:'bjxexd6ulauq7ap6pqxv-mysql.services.clever-cloud.com',
-//   database:'bjxexd6ulauq7ap6pqxv',
-//   user:'usch2d6auluhu2pz',
-//   password:'2mO43d7a0ih8POFWvyBL'
-// })
 
 
 // Check connection
@@ -71,4 +41,6 @@ module.exports = {
   EMAIL_PASS,
   EMAIL_FROM,
   EMAIL_PORT,  
+  EMAIL_FINA,
+  EMAIL_PRUEBA,
 }
