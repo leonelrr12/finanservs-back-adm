@@ -171,7 +171,7 @@ admRoutes.get('/prospects_sign/:id', (request, response) => {
 })
 
 
-admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
+admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
   sql  = " SELECT a.id as 'ID', c.name as Estado, datediff(now(), fcreate) as 'Dias Antiguedad' ,id_personal as 'Cédula Id', a.name as Nombre,"
   sql += " e.name as 'Sector',f.name as Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'Ocupación',"
   sql += " salary as Salario, loanPP as 'Préstamo Personal', cashOnHand as 'Efectivo en Mano', plazo as Plazo,"
@@ -179,10 +179,43 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " d.name as 'Contrato Trabajo', a.email as Email,"
   sql += " a.cellphone as Celular, a.phoneNumber as 'Télefono', b.name as Entidad, "
   sql += " CASE WHEN gender='female' THEN 'Mujer' ELSE 'Hombre' END as Genero, birthDate as 'Fecha Nacimiento',"
-  sql += " l.name as 'Fecuencia Pago', g.name as 'Tipo Residencia',"
+  sql += " l.name as 'Fecuencia Pago', g.name as 'Tipo Residencia', `residenceMonthly` as 'Pago Casa o Alquiler',"
+
+  sql += " '---------------' as 'Trabajo Actual',"
+  sql += " a.`work_name` as 'Empresa',"
+  sql += " `work_cargo` as 'Cargo',"
+  sql += " `work_address` as 'Dirección',"
+  sql += " `work_phone` as 'Teléfono',"
+  sql += " a.`work_phone_ext` as 'Extensión',"
+  sql += " `work_month` as 'Antiguedad (meses)',"
+  sql += " `work_prev_name` as 'Trabajo Anterior',"
+  sql += " `work_prev_month` as 'Duración',"
+
   sql += " k.name as 'Estado Civil', h.name as Provincia, i.name as Distrito, j.name as Corregimiento,"
-  sql += " fcreate as 'Creado el',"
+  sql += " `barrio_casa_calle` as 'Barrio casa calle',"
   sql += " o.name as Ejecutivo, comentarios as Comentarios,"
+  
+  sql += " '---------------' as 'Referencias Familiares',"
+  sql += " p.`name` as 'Nombre',"
+  sql += " p.`apellido` as 'Apellido',"
+  sql += " p.`parentesco` as 'Parentesco',"
+  sql += " p.`cellphone` as 'Celular',"
+  sql += " p.`phonenumber` as 'Telefono Casa',"
+  sql += " p.`work_name` as 'Donde Trabaja',"
+  sql += " p.`work_phonenumber` as 'Telefono',"
+  sql += " p.`work_phone_ext` as 'Extensión',"
+  
+  sql += " '---------------' as 'Referencias No Familiares',"
+  sql += " q.`name` as 'Nombre',"
+  sql += " q.`apellido` as 'Apellido',"
+  sql += " q.`parentesco` as 'Parentesco',"
+  sql += " q.`cellphone` as 'Celular',"
+  sql += " q.`phonenumber` as 'Telefono Casa',"
+  sql += " q.`work_name` as 'Donde Trabaja',"
+  sql += " q.`work_phonenumber` as 'Telefono',"
+  sql += " q.`work_phone_ext` as 'Extensión',"
+
+  sql += " fcreate as 'Creado el',"
 
   sql += " idUrl as '_Cédula',"
   sql += " socialSecurityProofUrl as '_Ficha Seguro Social',"
@@ -207,9 +240,105 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " LEFT JOIN civil_status k ON k.id=a.civil_status"
   sql += " LEFT JOIN payments l ON l.id=a.paymentFrecuency"
   sql += " LEFT JOIN users o ON o.id=a.ejecutivo"
+  sql += " left JOIN ref_person_family p ON p.id_prospect=a.id"
+  sql += " left JOIN ref_person_no_family q ON q.id_prospect=a.id"
   sql += " WHERE a.entity_f = ?;"
 
   const params = [request.params.entity_f];
+
+  console.log(sql)
+
+  config.cnn.query(sql, params, (error, results) => {
+    if (error) {
+      logger.error('Error SQL:', error.message)
+      response.status(500)
+    } 
+    if (results.length > 0) {
+      response.json(results)
+    } else {
+      response.send('Not results!')
+    }
+  })
+})
+
+admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
+  sql  = " SELECT a.id as 'A1ID', c.name as A2Estado, datediff(now(), fcreate) as 'dias' ,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
+  sql += " e.name as 'B1Sector',f.name as B2Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'B3Ocupación',"
+  sql += " salary as B5Salario, loanPP as 'B6Préstamo Personal', cashOnHand as 'B7Efectivo en Mano', plazo as B8Plazo,"
+  sql += " loanAuto as 'C1Préstamo Automóvil', loanTC as 'C2Préstamo TC', loanHip as 'C3Préstamo Hipoteca',"
+  sql += " d.name as 'C4Contrato Trabajo', a.email as C5Email,"
+  sql += " a.cellphone as C6Celular, a.phoneNumber as 'C7Télefono', b.name as C8Entidad, "
+  sql += " CASE WHEN gender='female' THEN 'Mujer' ELSE 'Hombre' END as D1Genero, birthDate as 'D2Fecha Nacimiento',"
+  sql += " l.name as 'D3Fecuencia Pago', g.name as 'D4Tipo Residencia', `residenceMonthly` as 'D5Pago Casa o Alquiler',"
+
+  sql += " '---------------' as 'E1Trabajo Actual',"
+  sql += " a.`work_name` as 'E2Empresa',"
+  sql += " `work_cargo` as 'E3Cargo',"
+  sql += " `work_address` as 'E4Dirección',"
+  sql += " `work_phone` as 'E5Teléfono',"
+  sql += " a.`work_phone_ext` as 'E6Extensión',"
+  sql += " `work_month` as 'E7Antiguedad (meses)',"
+  sql += " `work_prev_name` as 'E8Trabajo Anterior',"
+  sql += " `work_prev_month` as 'E9Duración',"
+
+  sql += " k.name as 'F0Estado Civil',"
+  sql += " '---------------' as 'F1Dirección Residencial',"
+  sql += " h.name as F2Provincia, i.name as F3Distrito, j.name as F4Corregimiento,"
+  sql += " `barrio_casa_calle` as 'F5Barrio casa calle',"
+  sql += " o.name as F6Ejecutivo, comentarios as F7Comentarios,"
+  
+  sql += " '---------------' as 'G1Referencias Familiares',"
+  sql += " p.`name` as 'G2Nombre',"
+  sql += " p.`apellido` as 'G3Apellido',"
+  sql += " p.`parentesco` as 'G4Parentesco',"
+  sql += " p.`cellphone` as 'G5Celular',"
+  sql += " p.`phonenumber` as 'G6Telefono Casa',"
+  sql += " p.`work_name` as 'G7Donde Trabaja',"
+  sql += " p.`work_phonenumber` as 'G8Telefono',"
+  sql += " p.`work_phone_ext` as 'G9Extensión',"
+  
+  sql += " '---------------' as 'H1Referencias No Familiares',"
+  sql += " q.`name` as 'H2Nombre',"
+  sql += " q.`apellido` as 'H3Apellido',"
+  sql += " q.`parentesco` as 'H4Parentesco',"
+  sql += " q.`cellphone` as 'H5Celular',"
+  sql += " q.`phonenumber` as 'H6Telefono Casa',"
+  sql += " q.`work_name` as 'H7Donde Trabaja',"
+  sql += " q.`work_phonenumber` as 'H8Telefono',"
+  sql += " q.`work_phone_ext` as 'H9Extensión',"
+
+  sql += " fcreate as 'Creado el',"
+
+  sql += " idUrl as '_Cédula',"
+  sql += " socialSecurityProofUrl as '_Ficha Seguro Social',"
+  sql += " payStubUrl as '_Comprobante de Pago',"
+  sql += " publicGoodProofUrl as '_Recibo Entidad Publica',"
+  sql += " workLetterUrl as '_Carta de Trabajo',"
+  sql += " apcLetterUrl as '_Autorización APC',"
+  sql += " apcReferenceUrl as '_Referencias APC'"
+
+  sql += " FROM prospects a"
+  sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
+  sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
+  sql += " LEFT JOIN profesions_acp m ON m.id=a.occupation"
+  sql += " LEFT JOIN profesions_lw n ON n.id=a.occupation"
+  sql += " LEFT JOIN laboral_status d ON d.id=a.contractType"
+  sql += " LEFT JOIN sectors e ON e.id=a.jobSector"
+  sql += " LEFT JOIN profesions f ON f.id=a.profession"
+  sql += " LEFT JOIN housings g ON g.id=a.residenceType"
+  sql += " LEFT JOIN provinces h ON h.id=a.province"
+  sql += " LEFT JOIN districts i ON i.id=a.district"
+  sql += " LEFT JOIN counties j ON j.id=a.residenceType"
+  sql += " LEFT JOIN civil_status k ON k.id=a.civil_status"
+  sql += " LEFT JOIN payments l ON l.id=a.paymentFrecuency"
+  sql += " LEFT JOIN users o ON o.id=a.ejecutivo"
+  sql += " left JOIN ref_person_family p ON p.id_prospect=a.id"
+  sql += " left JOIN ref_person_no_family q ON q.id_prospect=a.id"
+  sql += " WHERE a.entity_f = ?;"
+
+  const params = [request.params.entity_f];
+
+  // console.log(sql)
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
