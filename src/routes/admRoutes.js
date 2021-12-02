@@ -181,7 +181,8 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " CASE WHEN gender='female' THEN 'Mujer' ELSE 'Hombre' END as Genero, birthDate as 'Fecha Nacimiento',"
   sql += " l.name as 'Fecuencia Pago', g.name as 'Tipo Residencia',"
   sql += " k.name as 'Estado Civil', h.name as Provincia, i.name as Distrito, j.name as Corregimiento,"
-  sql += " fcreate as 'Creado el',a.estado as nEstado,"
+  sql += " fcreate as 'Creado el',"
+  sql += " o.name as Ejecutivo, comentarios as Comentarios,"
 
   sql += " idUrl as '_Cédula',"
   sql += " socialSecurityProofUrl as '_Ficha Seguro Social',"
@@ -189,9 +190,8 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " publicGoodProofUrl as '_Recibo Entidad Publica',"
   sql += " workLetterUrl as '_Carta de Trabajo',"
   sql += " apcLetterUrl as '_Autorización APC',"
-  sql += " apcReferenceUrl as '_Referencias APC',"
+  sql += " apcReferenceUrl as '_Referencias APC'"
 
-  sql += " o.name as Ejecutivo, comentarios as Comentarios "
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
   sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
