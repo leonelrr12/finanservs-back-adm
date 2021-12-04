@@ -21,6 +21,7 @@
     "formidable-serverless": "^1.1.1",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
+    "mime": "^3.0.0",
     "mongoose": "^5.11.15",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.10.0",
@@ -29,6 +30,7 @@
     "mysql2": "^2.2.5",
     "nodemailer": "^6.7.1",
     "path": "^0.12.7",
+    "pdfmake": "^0.2.4",
     "xmlhttprequest": "^1.8.0"
   }
 }

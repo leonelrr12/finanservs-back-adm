@@ -10,6 +10,23 @@ admRoutes.get('/', (request, response) => {
   response.send('Hola Mundo!!! Desde Admin Routes')
 })
 
+admRoutes.get('/verifyConnection', (req, res) => {
+
+  const sql = "SELECT now() as 'Hoy es';"
+  config.cnn.query(sql, (error, rows) => {
+    if (error) {
+      cnn.connect(error => {
+        if (error) {
+          logger.error('Error SQL:', error.message)
+          res.status(500)
+        }
+        res.status(200); 
+      })
+    }
+    res.json(rows);
+  })
+})
+
 
 admRoutes.post('/send-email', async (req, res) => {
 
@@ -307,6 +324,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " q.`work_phonenumber` as 'H8Telefono',"
   sql += " q.`work_phone_ext` as 'H9Extensión',"
 
+  sql += " a.estado as 'nEstado',"
   sql += " fcreate as 'Creado el',"
 
   sql += " idUrl as '_Cédula',"

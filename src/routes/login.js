@@ -58,12 +58,7 @@ const find = async (req, res, next) => {
           return res.sendStatus(404);
         }
         req.user = rows
-        req.user.dataValues = {
-          id: 1,
-          name: 'Leonel Rodriguez',
-          Role: 1,
-          Ruta: '700'
-        }
+        req.user.dataValues = rows[0]
         next();
       } else {
         return res.sendStatus(404);
@@ -75,8 +70,6 @@ const find = async (req, res, next) => {
 }
 
 loginRouter.route("/signin").post(find, generateToken, show);
-
-
 
 loginRouter.get("/users", (request, response) => {
   let sql = "SELECT a.id,email,a.name,phoneNumber,cellPhone,b.role,";
