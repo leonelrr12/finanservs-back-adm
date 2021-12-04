@@ -43,9 +43,19 @@ const find = async (req, res, next) => {
   try {
     config.cnn.query(sql, params, async (error, rows, fields) => {
       if (error) {
-        logger.error("Error SQL:", error.message);
-        return null;
-      }
+        cnn.connect(error => {
+          if (error) {
+            logger.error('Error SQL:', error.message)
+            res.status(500)
+          }
+          console.log('Database server runnuning!');
+        })
+      } 
+      // if (error) {
+
+      //   logger.error("Error SQL:", error.message);
+      //   return null;
+      // }
       if(rows) {
         const {id, hash, name, is_active, Role, Ruta} = rows[0]
         if(!is_active){
