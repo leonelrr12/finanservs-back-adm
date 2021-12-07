@@ -278,7 +278,7 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
 })
 
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
-  sql  = " SELECT a.id as 'A1ID', c.name as A2Estado, datediff(now(), fcreate) as 'dias' ,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
+  sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'B3Ocupación',"
   sql += " salary as B5Salario, loanPP as 'B6Préstamo Personal', cashOnHand as 'B7Efectivo en Mano', plazo as B8Plazo,"
   sql += " loanAuto as 'C1Préstamo Automóvil', loanTC as 'C2Préstamo TC', loanHip as 'C3Préstamo Hipoteca',"
@@ -323,16 +323,16 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " q.`work_phonenumber` as 'H8Telefono',"
   sql += " q.`work_phone_ext` as 'H9Extensión',"
 
-  sql += " a.estado as 'nEstado',"
-  sql += " fcreate as 'Creado el',"
+  sql += " a.estado as 'n1Estado',"
+  sql += " fcreate as 'n2Creado el',"
 
-  sql += " idUrl as '_Cédula',"
-  sql += " socialSecurityProofUrl as '_Ficha Seguro Social',"
-  sql += " payStubUrl as '_Comprobante de Pago',"
-  sql += " publicGoodProofUrl as '_Recibo Entidad Publica',"
-  sql += " workLetterUrl as '_Carta de Trabajo',"
-  sql += " apcLetterUrl as '_Autorización APC',"
-  sql += " apcReferenceUrl as '_Referencias APC'"
+  sql += " idUrl as '_n3Cédula',"
+  sql += " socialSecurityProofUrl as '_n4Ficha Seguro Social',"
+  sql += " payStubUrl as '_n5Comprobante de Pago',"
+  sql += " publicGoodProofUrl as '_n6Recibo Entidad Publica',"
+  sql += " workLetterUrl as '_n7Carta de Trabajo',"
+  sql += " apcLetterUrl as '_n8Autorización APC',"
+  sql += " apcReferenceUrl as '_n9Referencias APC'"
 
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
