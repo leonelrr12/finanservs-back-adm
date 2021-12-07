@@ -30,7 +30,6 @@ cnn.connect(error => {
   console.log('Database server runnuning!');
 })
 
-
 module.exports = {
   AWS_Access_key_ID,
   AWS_Secret_access_key,

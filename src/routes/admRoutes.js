@@ -1,10 +1,9 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer")
 const bcrypt = require('bcryptjs')
 
 const admRoutes = require('express').Router()
 const config = require('../utils/config')
 const logger = require('../utils/logger')
-
 
 admRoutes.get('/', (request, response) => {
   response.send('Hola Mundo!!! Desde Admin Routes')
