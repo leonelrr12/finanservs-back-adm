@@ -346,10 +346,6 @@ fileRoutes.get('/prospectsPDF/:entity_f', async (req, res) => {
 })
 
 
-
-
-
-
 fileRoutes.get('/prospectPDF/:id', async (req, res) => {
 
   const { id } = req.params
@@ -435,18 +431,19 @@ fileRoutes.get('/prospectPDF/:id', async (req, res) => {
  
     const r = rows[0]
     
-    const row1 = [[{ text: ['ID: ',  r.id], style: 'blueWhite' }, { text: ['Alta: ', r.fecha] }, { text: ['Estado: ', r.estado], alignment: 'right', colSpan: 2 }, {}]]
+    const row1 = [[{ text: ['ID: ',  r.id], style: 'blueWhite' }, { text: ['Alta: ', r.fecha] }, { text: ['Estado: ', r.estado], alignment: 'center', style="fontSize: 18", colSpan: 2 }, {}]]
     const row2 = [[{ text: ['Nombre: ', r.fname] }, { text: ['Segundo Nombre: ', r.fname_2] }, { text: ['Apellido Paterno: ', r.lname] }, { text: ['Apellido Materno: ', r.lname_2] }]]
     const row3 = [[{ text: ['Cédula: ',  r.cedula], style: 'blueWhite' }, { text: ['Email: ', r.email] }, { text: ['Género: ', r.genero] }, { text: ['Estado cicil: ', r.estadoCivil] }]]
     docum = [
       [{ text: ['Celular: ',  r.celular] }, { text: ['Teléfono: ', r.telefono] }, { text: ['Sector: ', r.sector] }, { text: ['Profesión: ', r.profesion] }],
       [{ text: ['Monto Solicitado: ',  r.loanPP] }, { text: ['Plazo: ', r.plazo, ' (meses)'] }, { text: ['Ejecutivo: ', r.ejecutivo] }, { text: ['A recibir: ', r.cashOnHandejecutivo] }],
-      ['Otras opciones', { text: ['Préstomao Auto: ', r.loanAuto,] }, { text: ['Tarjeta de C´redito: ', r.loanTC] }, { text: ['Hipoteca: ', r.LoanHip] }],
-      ['Indice Masa:', { text: ['Peso: ', '180 lbs',] }, { text: ['Estatura: ', '1.80 mts'] }, { text: ['IMS: ', '110'] }],
-      
-      [{ text: 'Comentarios: ' },{ text: r.comentarios, colSpan: 3, alignment: 'justify' }, {}, {}],
     ]
+    //['Otras opciones', { text: ['Préstomo Auto: ', r.loanAuto,] }, { text: ['Tarjeta de Crédito: ', r.loanTC] }, { text: ['Hipoteca: ', r.LoanHip] }],
+    //['Indice Masa:', { text: ['Peso: ', '180 lbs',] }, { text: ['Estatura: ', '1.80 mts'] }, { text: ['IMS: ', '110'] }],
 
+    const comentarios = [
+      [{ text: 'Comentarios: ' },{ text: r.comentarios, alignment: 'justify' }],
+    ]
     const dirAct = [
       [{ text: 'Dirección actual', colSpan: 4, alignment: 'center' }, {}, {}, {}],
       [{ text: ['Provicia: ',  r.provincia] }, { text: ['Distrito: ', r.distrito] }, { text: ['Corregimiento: ', r.corregimiento] }, { text: ['Barrio: ', r.barrio_casa_calle] }],
@@ -561,6 +558,12 @@ fileRoutes.get('/prospectPDF/:id', async (req, res) => {
           table: {
             widths: [ 'auto', 'auto', 'auto', '*' ],
             body: refNF
+          }
+        },
+        {
+          table: {
+            widths: [ 'auto', '*' ],
+            body: comentarios
           }
         },
       ],
