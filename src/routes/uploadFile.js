@@ -431,7 +431,7 @@ fileRoutes.get('/prospectPDF/:id', async (req, res) => {
  
     const r = rows[0]
     
-    const row1 = [[{ text: ['ID: ',  r.id], style: 'blueWhite' }, { text: ['Alta: ', r.fecha] }, { text: ['Estado: ', r.estado], alignment: 'center', style="fontSize: 18", colSpan: 2 }, {}]]
+    const row1 = [[{ text: ['ID: ',  r.id], style: 'blueWhite' }, { text: ['Alta: ', r.fecha] }, { text: ['Estado: ', r.estado], alignment: 'center', fontSize: 18, colSpan: 2 }, {}]]
     const row2 = [[{ text: ['Nombre: ', r.fname] }, { text: ['Segundo Nombre: ', r.fname_2] }, { text: ['Apellido Paterno: ', r.lname] }, { text: ['Apellido Materno: ', r.lname_2] }]]
     const row3 = [[{ text: ['Cédula: ',  r.cedula], style: 'blueWhite' }, { text: ['Email: ', r.email] }, { text: ['Género: ', r.genero] }, { text: ['Estado cicil: ', r.estadoCivil] }]]
     docum = [
