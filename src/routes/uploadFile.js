@@ -141,9 +141,9 @@ fileRoutes.get('/file', async (request, response) => {
 
 
 
-fileRoutes.get('/prospectsPDF/:entity_f', async (req, res) => {
+fileRoutes.get('/prospectsPDF/:entity_f/:estado', async (req, res) => {
 
-    const { entity_f } = req.params
+    const { entity_f, estado } = req.params
 
     let sql = "SELECT a.id, a.name, id_personal as cedula, a.email, a.cellphone as celular, a.phoneNumber as telefono,"
     sql += " date_format(fcreate, '%d/%m/%Y')  as fecha,"
@@ -152,7 +152,11 @@ fileRoutes.get('/prospectsPDF/:entity_f', async (req, res) => {
     sql += " INNER JOIN finanservs.estados_tramite c ON c.id=a.estado"
     sql += " LEFT JOIN finanservs.sectors e ON e.id=a.jobSector"
     sql += " LEFT JOIN finanservs.users o ON o.id=a.ejecutivo"
-    sql += " WHERE a.entity_f = ?"
+    if(estado === '1') {
+      sql += " WHERE a.entity_f = ? AND a.estado <> 4" 
+    } else {
+      sql += " WHERE a.entity_f = ?"
+    }
     sql += " ORDER BY id_personal"
 
     const params = [entity_f];
