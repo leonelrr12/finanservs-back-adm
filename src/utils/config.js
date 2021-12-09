@@ -30,7 +30,7 @@ const EMAIL_PRUEBA = process.env.EMAIL_PRUEBA
 // })
 
 
-// Create the connection pool. The pool-specific settings are the defaults
+// MySql DIgital Ocean-2
 const cnn = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
