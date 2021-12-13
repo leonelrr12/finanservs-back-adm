@@ -189,7 +189,8 @@ admRoutes.get('/prospects_sign/:id', (request, response) => {
 
 admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
   sql  = " SELECT a.id as 'ID', c.name as Estado, datediff(now(), fcreate) as 'Dias Antiguedad' ,id_personal as 'Cédula Id', a.name as Nombre,"
-  sql += " e.name as 'Sector',f.name as Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'Ocupación',"
+  sql += " e.name as 'Sector',f.name as Profesión," 
+  sql += " CASE WHEN profession=1 THEN 'Empresa Privada' WHEN profession=3 THEN 'Educador' WHEN profession=4 THEN t.name WHEN profession=5 THEN m.titulo WHEN  profession=6 THEN r.name WHEN profession=7 THEN s.name ELSE n.titulo END as 'Ocupación',"
   sql += " salary as Salario, loanPP as 'Préstamo Personal', cashOnHand as 'Efectivo en Mano', plazo as Plazo,"
   sql += " loanAuto as 'Préstamo Automóvil', loanTC as 'Préstamo TC', loanHip as 'Préstamo Hipoteca',"
   sql += " d.name as 'Contrato Trabajo', a.email as Email,"
@@ -244,8 +245,13 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
   sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
+
   sql += " LEFT JOIN profesions_acp m ON m.id=a.occupation"
   sql += " LEFT JOIN profesions_lw n ON n.id=a.occupation"
+  sql += " LEFT JOIN ranges_pol r ON r.id=a.occupation"
+  sql += " LEFT JOIN planillas_j s ON s.id=a.occupation"
+  sql += " LEFT JOIN institutions t ON t.id=a.occupation"
+
   sql += " LEFT JOIN laboral_status d ON d.id=a.contractType"
   sql += " LEFT JOIN sectors e ON e.id=a.jobSector"
   sql += " LEFT JOIN profesions f ON f.id=a.profession"
@@ -279,7 +285,8 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
 
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
-  sql += " e.name as 'B1Sector',f.name as B2Profesión, CASE WHEN profession=5 THEN m.titulo  ELSE n.titulo END as 'B3Ocupación',"
+  sql += " e.name as 'B1Sector',f.name as B2Profesión,"
+  sql += " CASE WHEN profession=1 THEN 'Empresa Privada' WHEN profession=3 THEN 'Educador' WHEN profession=4 THEN t.name WHEN profession=5 THEN m.titulo WHEN  profession=6 THEN r.name WHEN profession=7 THEN s.name ELSE n.titulo END as 'Ocupación',"
   sql += " salary as B5Salario, loanPP as 'B6Préstamo Personal', cashOnHand as 'B7Efectivo en Mano', plazo as B8Plazo,"
   sql += " loanAuto as 'C1Préstamo Automóvil', loanTC as 'C2Préstamo TC', loanHip as 'C3Préstamo Hipoteca',"
   sql += " d.name as 'C4Contrato Trabajo', a.email as C5Email,"
@@ -296,6 +303,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " `work_month` as 'E7Antiguedad (meses)',"
   sql += " `work_prev_name` as 'E8Trabajo Anterior',"
   sql += " `work_prev_month` as 'E9Duración',"
+  sql += " `work_prev_salary` as 'E9Salario',"
 
   sql += " k.name as 'F0Estado Civil',"
   sql += " '---------------' as 'F1Dirección Residencial',"
@@ -339,6 +347,11 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
   sql += " LEFT JOIN profesions_acp m ON m.id=a.occupation"
   sql += " LEFT JOIN profesions_lw n ON n.id=a.occupation"
+
+  sql += " LEFT JOIN ranges_pol r ON r.id=a.occupation"
+  sql += " LEFT JOIN planillas_j s ON s.id=a.occupation"
+  sql += " LEFT JOIN institutions t ON t.id=a.occupation"
+
   sql += " LEFT JOIN laboral_status d ON d.id=a.contractType"
   sql += " LEFT JOIN sectors e ON e.id=a.jobSector"
   sql += " LEFT JOIN profesions f ON f.id=a.profession"
