@@ -268,7 +268,7 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
 
   const params = [request.params.entity_f];
 
-  console.log(sql)
+  // console.log(sql)
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
