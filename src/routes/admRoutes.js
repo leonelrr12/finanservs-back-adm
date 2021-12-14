@@ -1314,7 +1314,7 @@ admRoutes.post('/estados_tramite', (request, response) => {
   const sql = "INSERT INTO estados_tramite (name, is_active) VALUES (?, ?)"
 
   const {name, is_active} = request.body
-  const params = [id, name, is_active === 'Si' ? true : false];
+  const params = [ name, is_active === 'Si' ? true : false ];
 
   console.log(sql);
   config.cnn.query(sql, params, (error, results, next) => {
@@ -1330,7 +1330,7 @@ admRoutes.put('/estados_tramite', (request, response) => {
   const sql = "UPDATE estados_tramite SET name=?, is_active=? WHERE id = ?"
 
   const {id, name, is_active} = request.body
-  const params = [name, is_active === 'Si' ? true : false, id];
+  const params = [ name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
@@ -1342,21 +1342,23 @@ admRoutes.put('/estados_tramite', (request, response) => {
 })
 
 admRoutes.delete('/estados_tramite/:id', (request, response) => {
-  const sql = "DELETE FROM estados_tramite WHERE id = ?"
-  const params = [request.params.id]; 
 
-  config.cnn.query(sql, params, (error, results) => {
-    if (error) {
-      logger.error('Error SQL:', error.message)
-      response.status(500)
-    } 
-    if (results.affectedRows > 0) {
-      response.send('Ok!')
-    } else {
-      logger.error('Error SQL:', 'No existe registro a eliminar!')
-      response.status(500)
-    }
-  })
+  response.send('Ok!')
+  // const sql = "DELETE FROM estados_tramite WHERE id = ?"
+  // const params = [request.params.id]; 
+
+  // config.cnn.query(sql, params, (error, results) => {
+  //   if (error) {
+  //     logger.error('Error SQL:', error.message)
+  //     response.status(500)
+  //   } 
+  //   if (results.affectedRows > 0) {
+  //     response.send('Ok!')
+  //   } else {
+  //     logger.error('Error SQL:', 'No existe registro a eliminar!')
+  //     response.status(500)
+  //   }
+  // })
 })
 
 
