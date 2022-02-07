@@ -29,7 +29,10 @@ admRoutes.get('/verifyConnection', (req, res) => {
 
 admRoutes.post('/send-email', async (req, res) => {
 
-  let { id, email, nombre, cedula, monto, celular, fcreate, dias, asunto, mensaje, email_banco, email_sponsor, estado, comentarios } = req.body
+  let { id, email, nombre, cedula, monto, celular, 
+    fcreate, dias, asunto, mensaje, email_banco, 
+    email_sponsor, estado, comentarios 
+  } = req.body
 
   let emails = email
   if(config.EMAIL_FINA.length > 4) emails += ", " + config.EMAIL_FINA
@@ -141,7 +144,6 @@ admRoutes.get("/sponsor/:id", (request, response) => {
     }
   });
 });
-
 admRoutes.get("/red-sponsor", (request, response) => {
   let sql = "SELECT a.id, id_ref, concat(a.nombre,' ',apellidos) as Nombre, a.email, celular, dateCreated,"
   sql += " (SELECT concat(nombre,' ',apellidos) FROM finanservs.referidos WHERE id = a.id_ref) as Sponsor,"
@@ -282,7 +284,6 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión,"
@@ -383,7 +384,6 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
   let sql = "SELECT id, estado, comentarios FROM prospects WHERE id = ?;"
 
@@ -401,7 +401,6 @@ admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
     }
   })
 })
-
 admRoutes.put('/prospects/entity_f', (request, response) => {
   const sql = "UPDATE prospects SET estado=?, comentarios=?, ejecutivo=?, fupdate=now() WHERE id = ?"
   
@@ -434,7 +433,6 @@ admRoutes.get('/sectors', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/sectors/:id', (request, response) => {
   const sql = "SELECT * FROM sectors WHERE id = ?"
 
@@ -452,7 +450,6 @@ admRoutes.get('/sectors/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/sectors', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM sectors"
   config.cnn.query(sql, (error, results) => {
@@ -476,7 +473,6 @@ admRoutes.post('/sectors', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/sectors', (request, response) => {
   const sql = "UPDATE sectors SET name=?, short_name=? WHERE id = ?"
 
@@ -491,7 +487,6 @@ admRoutes.put('/sectors', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/sectors/:id', (request, response) => {
   const sql = "DELETE FROM sectors WHERE id = ?"
   const params = [request.params.id]; 
@@ -527,7 +522,6 @@ admRoutes.get('/civilstatus', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/civilstatus/:id', (request, response) => {
   const sql = "SELECT * FROM civil_status WHERE id = ?"
 
@@ -545,7 +539,6 @@ admRoutes.get('/civilstatus/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/civilstatus', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM civil_status"
   config.cnn.query(sql, (error, results) => {
@@ -569,7 +562,6 @@ admRoutes.post('/civilstatus', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/civilstatus', (request, response) => {
   const sql = "UPDATE civil_status SET name=? WHERE id = ?"
 
@@ -584,7 +576,6 @@ admRoutes.put('/civilstatus', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/civilstatus/:id', (request, response) => {
   const sql = "DELETE FROM civil_status WHERE id = ?"
   const params = [request.params.id]; 
@@ -620,7 +611,6 @@ admRoutes.get('/profesions', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/profesions/:id', (request, response) => {
   const sql = "SELECT * FROM profesions WHERE id = ?"
 
@@ -638,7 +628,6 @@ admRoutes.get('/profesions/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/profesions', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM profesions"
   config.cnn.query(sql, (error, results) => {
@@ -662,7 +651,6 @@ admRoutes.post('/profesions', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/profesions', (request, response) => {
   const sql = "UPDATE profesions SET name=? WHERE id = ?"
 
@@ -677,7 +665,6 @@ admRoutes.put('/profesions', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/profesions/:id', (request, response) => {
   const sql = "DELETE FROM profesions WHERE id = ?"
   const params = [request.params.id]; 
@@ -713,7 +700,6 @@ admRoutes.get('/profesions_lw', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/profesions_lw/:page/:linePage', (request, response) => {
   // const sql = "SELECT id, titulo as name FROM profesions_lw LIMIT ?, ?"
   const sql = "SELECT id, titulo as name FROM profesions_lw"
@@ -735,7 +721,6 @@ admRoutes.get('/profesions_lw/:page/:linePage', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/profesions_lw/:id', (request, response) => {
   const sql = "SELECT id, titulo as name FROM profesions_lw WHERE id = ?"
   const params = [request.params.id]
@@ -752,7 +737,6 @@ admRoutes.get('/profesions_lw/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/profesions_lw', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM profesions_lw"
   config.cnn.query(sql, (error, results) => {
@@ -776,7 +760,6 @@ admRoutes.post('/profesions_lw', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/profesions_lw', (request, response) => {
   const sql = "UPDATE profesions_lw SET titulo=? WHERE id = ?"
   const {id, name} = request.body
@@ -790,7 +773,6 @@ admRoutes.put('/profesions_lw', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/profesions_lw/:id', (request, response) => {
   const sql = "DELETE FROM profesions_lw WHERE id = ?"
   const params = [request.params.id]; 
@@ -826,7 +808,6 @@ admRoutes.get('/institutions', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/institutions/:id', (request, response) => {
   const sql = "SELECT * FROM institutions WHERE id = ?"
 
@@ -844,7 +825,6 @@ admRoutes.get('/institutions/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/institutions', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM institutions"
   config.cnn.query(sql, (error, results) => {
@@ -868,7 +848,6 @@ admRoutes.post('/institutions', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/institutions', (request, response) => {
   const sql = "UPDATE institutions SET name=? WHERE id = ?"
 
@@ -883,7 +862,6 @@ admRoutes.put('/institutions', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/institutions/:id', (request, response) => {
   const sql = "DELETE FROM institutions WHERE id = ?"
   const params = [request.params.id]; 
@@ -919,7 +897,6 @@ admRoutes.get('/planillas_j', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/planillas_j/:id', (request, response) => {
   const sql = "SELECT * FROM planillas_j WHERE id = ?"
 
@@ -937,7 +914,6 @@ admRoutes.get('/planillas_j/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/planillas_j', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM planillas_j"
   config.cnn.query(sql, (error, results) => {
@@ -961,7 +937,6 @@ admRoutes.post('/planillas_j', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/planillas_j', (request, response) => {
   const sql = "UPDATE planillas_j SET name=? WHERE id = ?"
 
@@ -976,7 +951,6 @@ admRoutes.put('/planillas_j', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/planillas_j/:id', (request, response) => {
   const sql = "DELETE FROM planillas_j WHERE id = ?"
   const params = [request.params.id]; 
@@ -1012,7 +986,6 @@ admRoutes.get('/housings', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/housings/:id', (request, response) => {
   const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM housings WHERE id = ?"
 
@@ -1030,7 +1003,6 @@ admRoutes.get('/housings/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/housings', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM housings"
   config.cnn.query(sql, (error, results) => {
@@ -1054,7 +1026,6 @@ admRoutes.post('/housings', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/housings', (request, response) => {
   const sql = "UPDATE housings SET name=?, is_active=? WHERE id = ?"
 
@@ -1069,7 +1040,6 @@ admRoutes.put('/housings', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/housings/:id', (request, response) => {
   const sql = "DELETE FROM housings WHERE id = ?"
   const params = [request.params.id]; 
@@ -1105,7 +1075,6 @@ admRoutes.get('/purposes', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/purposes/:id', (request, response) => {
   const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM purposes WHERE id = ?"
 
@@ -1123,7 +1092,6 @@ admRoutes.get('/purposes/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/purposes', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM purposes"
   config.cnn.query(sql, (error, results) => {
@@ -1147,7 +1115,6 @@ admRoutes.post('/purposes', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/purposes', (request, response) => {
   const sql = "UPDATE purposes SET name=?, is_active=? WHERE id = ?"
 
@@ -1162,7 +1129,6 @@ admRoutes.put('/purposes', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/purposes/:id', (request, response) => {
   const sql = "DELETE FROM purposes WHERE id = ?"
   const params = [request.params.id]; 
@@ -1198,7 +1164,6 @@ admRoutes.get('/payments', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/payments/:id', (request, response) => {
   const sql = "SELECT id, name FROM payments WHERE id = ?"
 
@@ -1216,7 +1181,6 @@ admRoutes.get('/payments/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/payments', (request, response) => {
   const sql = "SELECT max(id) + 1 as id FROM payments"
   config.cnn.query(sql, (error, results) => {
@@ -1240,7 +1204,6 @@ admRoutes.post('/payments', (request, response) => {
     })
   })
 })
-
 admRoutes.put('/payments', (request, response) => {
   const sql = "UPDATE payments SET name=? WHERE id = ?"
 
@@ -1255,7 +1218,6 @@ admRoutes.put('/payments', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/payments/:id', (request, response) => {
   const sql = "DELETE FROM payments WHERE id = ?"
   const params = [request.params.id]; 
@@ -1291,7 +1253,6 @@ admRoutes.get('/estados_tramite', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/estados_tramite/:id', (request, response) => {
   const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM estados_tramite WHERE id = ?"
 
@@ -1309,7 +1270,6 @@ admRoutes.get('/estados_tramite/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/estados_tramite', (request, response) => {
   const sql = "INSERT INTO estados_tramite (name, is_active) VALUES (?, ?)"
 
@@ -1325,7 +1285,6 @@ admRoutes.post('/estados_tramite', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/estados_tramite', (request, response) => {
   const sql = "UPDATE estados_tramite SET name=?, is_active=? WHERE id = ?"
 
@@ -1340,7 +1299,6 @@ admRoutes.put('/estados_tramite', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/estados_tramite/:id', (request, response) => {
 
   response.send('Ok!')
@@ -1378,7 +1336,6 @@ admRoutes.get('/type_documents', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/type_documents/:id', (request, response) => {
   const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM type_documents WHERE id = ?"
 
@@ -1396,7 +1353,6 @@ admRoutes.get('/type_documents/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/type_documents', (request, response) => {
   const sql = "INSERT INTO type_documents (name, is_active) VALUES (?, ?)"
 
@@ -1411,7 +1367,6 @@ admRoutes.post('/type_documents', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/type_documents', (request, response) => {
   const sql = "UPDATE type_documents SET name=?, is_active=? WHERE id = ?"
 
@@ -1426,7 +1381,6 @@ admRoutes.put('/type_documents', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/type_documents/:id', (request, response) => {
   const sql = "DELETE FROM type_documents WHERE id = ?"
   const params = [request.params.id]; 
@@ -1462,7 +1416,6 @@ admRoutes.get('/terms_loan', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/terms_loan/:id', (request, response) => {
   const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM terms_loan WHERE id = ?"
 
@@ -1480,7 +1433,6 @@ admRoutes.get('/terms_loan/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/terms_loan', (request, response) => {
     const sql = "INSERT INTO terms_loan (name, is_active) VALUES (?, ?)"
 
@@ -1495,7 +1447,6 @@ admRoutes.post('/terms_loan', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/terms_loan', (request, response) => {
   const sql = "UPDATE terms_loan SET name=?, is_active=? WHERE id = ?"
 
@@ -1510,7 +1461,6 @@ admRoutes.put('/terms_loan', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/terms_loan/:id', (request, response) => {
   const sql = "DELETE FROM terms_loan WHERE id = ?"
   const params = [request.params.id]; 
@@ -1529,6 +1479,7 @@ admRoutes.delete('/terms_loan/:id', (request, response) => {
   })
 })
 
+
 admRoutes.get('/entities_f', (request, response) => {
   let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
@@ -1546,7 +1497,6 @@ admRoutes.get('/entities_f', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/entities_f/:id', (request, response) => {
   let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
@@ -1566,7 +1516,6 @@ admRoutes.get('/entities_f/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/entities_f', (request, response) => {
   const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)"
   const {name, id_ruta, contact, phone_number, cellphone, emails, is_active} = request.body
@@ -1581,7 +1530,6 @@ admRoutes.post('/entities_f', (request, response) => {
     response.json(results)
   })
 })
-
 admRoutes.put('/entities_f', (request, response) => {
   const sql = "UPDATE entities_f SET name=?, id_ruta=?, contact=?, phone_number=?, cellphone=?, emails=?, is_active=? WHERE id = ?"
 
@@ -1596,7 +1544,6 @@ admRoutes.put('/entities_f', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/entities_f/:id', (request, response) => {
   const sql = "DELETE FROM entities_f WHERE id = ?"
   const params = [request.params.id]; 
@@ -1638,7 +1585,6 @@ admRoutes.get('/sector_profesion', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/sector_profesion/:id', (request, response) => {
   const sql = "SELECT id, id_sector, id_profesion, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM sector_profesion WHERE id = ?"
 
@@ -1656,7 +1602,6 @@ admRoutes.get('/sector_profesion/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/sector_profesion', (request, response) => {
   const sql = "INSERT INTO sector_profesion (id_sector, id_profesion, is_active) VALUES (?, ?)"
 
@@ -1671,7 +1616,6 @@ admRoutes.post('/sector_profesion', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/sector_profesion', (request, response) => {
   const sql = "UPDATE sector_profesion SET id_sector=?, id_profesion=?, is_active=? WHERE id = ?"
 
@@ -1686,7 +1630,6 @@ admRoutes.put('/sector_profesion', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/sector_profesion/:id', (request, response) => {
   const sql = "DELETE FROM sector_profesion WHERE id = ?"
   const params = [request.params.id]; 
@@ -1734,7 +1677,6 @@ admRoutes.get('/entity_params', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/entity_params/:id', (request, response) => {
   let sql = "SELECT a.id, id_entity_f, id_sector_profesion,"
   sql += " descto_chip,"
@@ -1764,7 +1706,6 @@ admRoutes.get('/entity_params/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/entity_params', (request, response) => {
   let sql = "INSERT INTO entity_params ("
   sql += " id_entity_f, id_sector_profesion,"
@@ -1784,7 +1725,6 @@ admRoutes.post('/entity_params', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/entity_params', (request, response) => {
   // const sql = "UPDATE sector_profesion SET id_sector=?, id_profesion=?, is_active=? WHERE id = ?"
   let sql = "UPDATE entity_params SET "
@@ -1807,7 +1747,6 @@ admRoutes.put('/entity_params', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/entity_params/:id', (request, response) => {
   const sql = "DELETE FROM entity_params WHERE id = ?"
   const params = [request.params.id]; 
@@ -1848,7 +1787,6 @@ admRoutes.get('/users', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/users/:id', (request, response) => {
   let sql = "SELECT a.id,email,a.name,phoneNumber,cellPhone,"
   sql += " a.id_role,entity_f,address,"
@@ -1872,7 +1810,6 @@ admRoutes.get('/users/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/users', async (request, response) => {
   let sql = "INSERT INTO users (id_role,email,hash,entity_f,name,"
   sql += " address,phoneNumber,cellPhone,is_new,is_active)"
@@ -1894,7 +1831,6 @@ admRoutes.post('/users', async (request, response) => {
     logger.error('Error hash:', error.message)
   }
 })
-
 admRoutes.put('/users', (request, response) => {
   let sql = "UPDATE users SET id_role=?,email=?,entity_f=?,name=?,"
   sql += " address=?,phoneNumber=?,cellPhone=?,is_new=?,is_active=?"
@@ -1911,7 +1847,6 @@ admRoutes.put('/users', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/users/:id', (request, response) => {
   const sql = "DELETE FROM users WHERE id = ? and id_role <> 1"
   const params = [request.params.id]; 
@@ -1949,7 +1884,6 @@ admRoutes.get('/roles', (request, response) => {
     }
   })
 })
-
 admRoutes.get('/roles/:id', (request, response) => {
   let sql = "SELECT id,role,description"
   sql += " FROM roles"
@@ -1969,7 +1903,6 @@ admRoutes.get('/roles/:id', (request, response) => {
     }
   })
 }) 
-
 admRoutes.post('/roles', (request, response) => {
   let sql = "INSERT INTO roles (role,description)"
   sql += " value (?,?)"
@@ -1986,7 +1919,6 @@ admRoutes.post('/roles', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.put('/roles', (request, response) => {
   let sql = "UPDATE roles SET role=?,description=?"
   sql += " WHERE id=?"
@@ -2002,7 +1934,6 @@ admRoutes.put('/roles', (request, response) => {
     response.send('Ok!')
   })
 })
-
 admRoutes.delete('/roles/:id', (request, response) => {
   const sql = "DELETE FROM roles WHERE id = ? and role <> 'Admin'"
   const params = [request.params.id]; 
