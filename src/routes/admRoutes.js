@@ -1529,8 +1529,6 @@ admRoutes.delete('/terms_loan/:id', (request, response) => {
   })
 })
 
-
-
 admRoutes.get('/entities_f', (request, response) => {
   let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
@@ -1830,11 +1828,12 @@ admRoutes.delete('/entity_params/:id', (request, response) => {
 
 
 admRoutes.get('/users', (request, response) => {
-  let sql = "SELECT a.id,email,a.name,phoneNumber,cellPhone,b.role,entity_f,"
+  let sql = "SELECT a.id,a.email,a.name,a.phoneNumber,a.cellPhone,b.role,entity_f, c.name as Entidad,"
   sql += " CASE WHEN a.is_new THEN 'Si' ELSE 'No' END as is_new,"
   sql += " CASE WHEN a.is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM users a"
   sql += " INNER JOIN roles b on b.id = a.id_role"
+  sql += " LEFT JOIN entities_f c on c.id = a.entity_f"
   sql += " ORDER BY a.id"
 
   config.cnn.query(sql, (error, results) => {
