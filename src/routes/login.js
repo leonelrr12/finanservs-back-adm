@@ -39,6 +39,7 @@ const find = async (req, res, next) => {
 
   const { email, password } = req.body.user;
   const params = [email];
+  console.log(sql)
 
   try {
     config.cnn.query(sql, params, async (error, rows, fields) => {
@@ -51,11 +52,6 @@ const find = async (req, res, next) => {
           console.log('Database server runnuning!');
         })
       } 
-      // if (error) {
-
-      //   logger.error("Error SQL:", error.message);
-      //   return null;
-      // }
       if(rows) {
         const {id, hash, name, is_active, Role, Ruta} = rows[0]
         if(!is_active){
@@ -65,7 +61,9 @@ const find = async (req, res, next) => {
         const validPass = await bcrypt.compare(password, hash)
         if(!validPass) {
           logger.error('Error Seguridad:', 'Credenciales Inválidas ...!')
-          return res.sendStatus(404);
+          return res.status(401).json({
+            error: "Credenciales Inválidas ...!",
+          });
         }
         req.user = rows
         req.user.dataValues = rows[0]
@@ -103,13 +101,13 @@ loginRouter.get("/users", (request, response) => {
 });
 
 loginRouter.get("/new-user/:email", (request, response) => {
-  let sql = "SELECT is_new";
-  sql += " FROM users";
-  sql += " WHERE email=?";
-  sql += " AND (is_active = true OR id_role = 1)";
+  let sql = "SELECT is_new"
+  sql += " FROM users"
+  sql += " WHERE email=?"
+  sql += " AND (is_active = true OR id_role = 1)"
 
-  const { email } = request.params;
-  const params = [email];
+  const { email } = request.params
+  const params = [email]
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
@@ -117,7 +115,7 @@ loginRouter.get("/new-user/:email", (request, response) => {
       response.status(500);
     }
     if (results.length > 0) {
-      response.json(results[0]);
+      response.json(results[0].is_new);
     } else {
       response.send("Not results!");
     }
