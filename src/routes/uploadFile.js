@@ -140,7 +140,6 @@ fileRoutes.get('/file', async (request, response) => {
 })
 
 
-
 fileRoutes.get('/prospectsPDF/:entity_f/:estado', async (req, res) => {
 
     const { entity_f, estado } = req.params

@@ -334,7 +334,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " q.`work_phone_ext` as 'H9Extensión',"
 
   sql += " a.estado as 'n1Estado',"
-  sql += " fcreate as 'n2Creado el',"
+  sql += " date_format(fcreate, '%d/%m/%Y') as 'n2Creado el',"
 
   sql += " idUrl as '_n3Cédula',"
   sql += " socialSecurityProofUrl as '_n4Ficha Seguro Social',"
