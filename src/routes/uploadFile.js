@@ -640,5 +640,75 @@ fileRoutes.get('/prospectPDF/:id', async (req, res) => {
 })
 })
 
+fileRoutes.get('/solicitudFinancomer/:id', async (req, res) => {
+
+  const { id } = req.params
+
+  let sql = ""
+  sql += " SELECT a.id, id_personal as cedula, a.fname, fname_2, a.lname, lname_2, a.email,"
+  sql += " convert(datediff(now(), birthDate)/365, UNSIGNED) as edad, salary as salario, f.name as profesion,"
+  sql += " a.cellphone as celular, a.phoneNumber as telefono,"
+  sql += " CASE WHEN gender='female' THEN 'F' ELSE 'M' END as genero,"
+  sql += " date_format(birthDate, '%d/%m/%Y') as fechaNac, a.work_name as trabActual, work_cargo as trabCargo,"
+  sql += " work_address as trabDirección, work_phone as trabTelefono,"
+  sql += " a.work_phone_ext as trabTelExt, k.name as estadoCivil,"
+  sql += " h.name as provincia, i.name as distrito, j.name as corregimiento,"
+  sql += " barrio_casa_calle as barrio_Casa_Calle,"
+  sql += " barriada_edificio, calle, no_casa_piso_apto,"
+  sql += " date_format(fcreate, '%d/%m/%Y') as fechaSolicitud"
+  sql += " FROM prospects a"
+  sql += " LEFT JOIN profesions f ON f.id=a.profession"
+  sql += " LEFT JOIN provinces h ON h.id=a.province"
+  sql += " LEFT JOIN districts i ON i.id=a.district"
+  sql += " LEFT JOIN counties j ON j.id=a.residenceType"
+  sql += " LEFT JOIN civil_status k ON k.id=a.civil_status"
+  sql += " WHERE a.id = ?"
+
+  let sql2 = ""
+  sql2 += " select concat(name,' ',apellido) as nombreCompleto,"
+  sql2 += " cellphone as celular, parentesco as parentesco"
+  sql2 += " from ref_person_family"
+  sql2 += " where id_prospect = ?"
+  sql2 += " union all "
+  sql2 += " select concat(name,' ',apellido) as nombreCompleto,"
+  sql2 += " cellphone as celular, parentesco as parentesco"
+  sql2 += " from ref_person_no_family"
+  sql2 += " where id_prospect = ?"
+
+  let params = [id];
+
+  config.cnn.query(sql, params, (error, rows) => {
+    if (error) {
+      cnn.connect(error => {
+        if (error) {
+          logger.error('Error SQL:', error.message)
+          res.status(500)
+        }
+        console.log('Database server runnuning!');
+      })
+    } 
+    if (rows.length > 0) {
+
+      
+      const prospect = rows[0]
+      params = [id, id];
+
+      config.cnn.query(sql2, params, (error, rows) => {
+        if (error) {
+          return res.json({"Info": prospect, "Refe": {}})
+        } 
+        if (rows.length > 0) {
+          return res.json({"Info": prospect, "Refe": rows})
+        } else {
+          return res.json({"Info": prospect, "Refe": {}})
+        }
+      })
+    } else {
+      return res.json({"Info": {}, "Refe": {}})
+    }
+
+    return
+  })
+})
 
 module.exports = fileRoutes
