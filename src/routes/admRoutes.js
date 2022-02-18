@@ -285,6 +285,10 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
   })
 })
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
+
+  const body = JSON.stringify(request.params.entity_f).replace('"','').replace('"','')
+  const [Tipo_Agente, Agente, Ruta] = body.split(',')
+
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión,"
   sql += " CASE WHEN profession=1 THEN 'Empresa Privada' WHEN profession=3 THEN 'Educador' WHEN profession=4 THEN t.name WHEN profession=5 THEN m.titulo WHEN  profession=6 THEN r.name WHEN profession=7 THEN s.name ELSE n.titulo END as 'B3Ocupación',"
@@ -366,12 +370,14 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " LEFT JOIN users o ON o.id=a.ejecutivo"
   sql += " left JOIN ref_person_family p ON p.id_prospect=a.id"
   sql += " left JOIN ref_person_no_family q ON q.id_prospect=a.id"
-  sql += " WHERE a.entity_f = ?;"
+  if(Tipo_Agente === '1') {
+    sql += " WHERE a.entity_f = ?;"
+  } else {
+    sql += " WHERE a.entity_f = ? and a.id_agente = ?;"
+  }
 
-  const params = [request.params.entity_f];
-
-  // console.log(sql)
-
+  const params = [Ruta, Agente];
+  
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -380,7 +386,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
     if (results.length > 0) {
       response.json(results)
     } else {
-      response.send('Not results!')
+      response.json([])
     }
   })
 })

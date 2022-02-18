@@ -32,14 +32,17 @@ const generateToken = async (req, res, next) => {
 
 const find = async (req, res, next) => {
   let sql = "SELECT a.id, hash, a.name, a.is_active, is_new, id_role as Role,";
-  sql += "  coalesce(id_ruta, 0) as Ruta";
-  sql += " FROM users a left join entities_f b on a.entity_f = b.id";
+  sql += " coalesce(id_ruta, '0') as Ruta,";
+  sql += " id_agente as Agente,";
+  sql += " coalesce(c.type, 0) as Tipo_Agente";
+  sql += " FROM users a"
+  sql += " left join entities_f b on a.entity_f = b.id";
+  sql += " left join agentes c on a.id_agente = c.id";
   sql += " WHERE email=?";
   sql += " AND (a.is_active = true OR id_role = 1)";
 
   const { email, password } = req.body.user;
   const params = [email];
-  console.log(sql)
 
   try {
     config.cnn.query(sql, params, async (error, rows, fields) => {
@@ -53,7 +56,7 @@ const find = async (req, res, next) => {
         })
       } 
       if(rows) {
-        const {id, hash, name, is_active, Role, Ruta} = rows[0]
+        const { hash, is_active } = rows[0]
         if(!is_active){
           logger.error('Error Status:', 'Usuario Bloqueado.')
           return res.sendStatus(404);
