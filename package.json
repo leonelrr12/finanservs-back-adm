@@ -20,6 +20,7 @@
     "express": "^4.17.1",
     "formidable-serverless": "^1.1.1",
     "fs": "0.0.1-security",
+    "googleapis": "^95.0.0",
     "jsonwebtoken": "^8.5.1",
     "mime": "^3.0.0",
     "mongoose-unique-validator": "^2.0.3",

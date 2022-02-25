@@ -1,9 +1,16 @@
-const nodemailer = require("nodemailer")
 const bcrypt = require('bcryptjs')
-
 const admRoutes = require('express').Router()
-const config = require('../utils/config')
 const logger = require('../utils/logger')
+const nodemailer = require('nodemailer')
+const { google } = require('googleapis')
+const config = require('../utils/config')
+const OAuth2 = google.auth.OAuth2
+
+// const { sendEmail: key } = config
+const { sendGEmail: key } = config
+const OAuth2Client = new OAuth2(key.clientId, key.clientSecret, key.redirectUri)
+OAuth2Client.setCredentials({ refresh_token: key.refreshToken })
+
 
 admRoutes.get('/', (request, response) => {
   response.send('Hola Mundo!!! Desde Admin Routes')
@@ -34,9 +41,7 @@ admRoutes.post('/send-email', async (req, res) => {
     email_sponsor, estado, comentarios 
   } = req.body
 
-  let emails = email
-  if(config.EMAIL_FINA.length > 4) emails += ", " + config.EMAIL_FINA
-  if(config.EMAIL_PRUEBA.length > 4) emails += ", " + config.EMAIL_PRUEBA
+  let emails = email + ", guasimo01@gmail.com, rsanchez2565@gmail.com"
   if(email_banco.length > 4) emails += ", " + email_banco
   if(email_sponsor.length > 4) emails += ", " + email_sponsor
 
@@ -62,33 +67,43 @@ admRoutes.post('/send-email', async (req, res) => {
       <p>${mensaje}</p>
     `
   
-    let transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: config.EMAIL_PORT,
-      auth: {
-        user: config.EMAIL_USER, 
-        pass: config.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
+    const send_mail = async () => {
+      const accessToken = await OAuth2Client.getAccessToken()
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            type: 'OAuth2',
+            user: key.EMAIL_USER, 
+            clientId: key.clientId, 
+            clientSecret: key.clientSecret,
+            refreshToken: key.refreshToken,
+            accessToken: accessToken
+          },
+          tls: {
+            rejectUnauthorized: false
+          }
+        })
+    
+        const mailOptions = {
+          from: key.EMAIL_FROM,
+          to: emails,
+          subject: asunto,
+          text: mensaje,
+          html: htmlEmail
+        }
+    
+        const result = await transporter.sendMail(mailOptions)
+        transporter.close()
+        // console.log(result)
+        return result
+      } catch (err) {
+        console.log('Estamos aqui: ', err)
       }
-    })
-
-    let mailOptions = {
-      from: config.EMAIL_FROM,
-      to: emails,
-      subject: asunto,
-      text: mensaje,
-      html: htmlEmail
     }
-
-    transporter.sendMail(mailOptions, ( err, info ) => {
-      if(err) {
-        return console.error("Estamos aqui", err)
-      }
-      console.log("Mensaje enviado: %s", info.envelope)
-      console.log("Url del mensaje: %s", nodemailer.getTestMessageUrl(info))
-    })
+    send_mail()
+      .then( r => res.status(200).send('Enviado!') )
+      .catch( e => console.log(e.message) )
   })
 })
 admRoutes.get("/email-estado/:id", (request, response) => {
