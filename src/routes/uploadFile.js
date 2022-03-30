@@ -200,7 +200,7 @@ fileRoutes.get('/datosProspect/:id', async (req, res) => {
   sql += " LEFT JOIN profesions f ON f.id=a.profession"
   sql += " LEFT JOIN provinces h ON h.id=a.province"
   sql += " LEFT JOIN districts i ON i.id=a.district"
-  sql += " LEFT JOIN counties j ON j.id=a.residenceType"
+  sql += " LEFT JOIN counties j ON j.id=a.county"
   sql += " LEFT JOIN civil_status k ON k.id=a.civil_status"
   sql += " WHERE a.id = ?"
 
