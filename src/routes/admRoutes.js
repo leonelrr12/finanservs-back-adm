@@ -302,7 +302,7 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
 
   const body = JSON.stringify(request.params.entity_f).replace('"','').replace('"','')
-  const [Tipo_Agente, Agente, Ruta] = body.split(',')
+  const [Role='0', Tipo_Agente, Agente, Ruta] = body.split(',')
 
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión,"
@@ -361,7 +361,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " publicGoodProofUrl as '_n6Recibo Entidad Publica',"
   sql += " workLetterUrl as '_n7Carta de Trabajo',"
   sql += " apcLetterUrl as '_n8Autorización APC',"
-  sql += " apcReferenceUrl as '_n9Referencias APC'"
+  sql += " apcReferenceUrl as '_n9Referencias APC', a.entity_f as 'zzzEntity_No'"
 
   sql += " FROM prospects a"
   sql += " INNER JOIN entities_f b ON b.id_ruta=a.entity_f"
@@ -385,14 +385,17 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " LEFT JOIN users o ON o.id=a.ejecutivo"
   sql += " left JOIN ref_person_family p ON p.id_prospect=a.id"
   sql += " left JOIN ref_person_no_family q ON q.id_prospect=a.id"
-  if(Tipo_Agente === '1') {
-    sql += " WHERE a.entity_f = ?;"
-  } else {
-    sql += " WHERE a.entity_f = ? and a.id_agente = ?;"
+  if(Role !== '1') {
+    if(Tipo_Agente === '1') {
+      sql += " WHERE a.entity_f = ?;"
+    } else {
+      sql += " WHERE a.entity_f = ? and a.id_agente = ?;"
+    }
   }
 
   const params = [Ruta, Agente];
-  
+  // console.log(Role, sql)
+
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -428,6 +431,7 @@ admRoutes.put('/prospects/entity_f', (request, response) => {
   const body = request.body
   const params =  [body.estado, body.comentarios, body.ejecutivo, body.id ]
 
+  console.log(sql, params)
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -728,7 +732,7 @@ admRoutes.get('/profesions_lw/:page/:linePage', (request, response) => {
   const linePage = parseInt(request.params.linePage)
   const params = [page, linePage]
 
-  console.log(params);
+  // console.log(params);
   // config.cnn.query(sql, params, (error, results) => {
   config.cnn.query(sql, (error, results) => {
     if (error) {
@@ -1297,7 +1301,7 @@ admRoutes.post('/estados_tramite', (request, response) => {
   const {name, is_active} = request.body
   const params = [ name, is_active === 'Si' ? true : false ];
 
-  console.log(sql);
+  // console.log(sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -1502,9 +1506,10 @@ admRoutes.delete('/terms_loan/:id', (request, response) => {
 
 
 admRoutes.get('/entities_f', (request, response) => {
-  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
+  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails, type,"
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM entities_f"
+  sql += " WHERE id > 1"
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
@@ -1519,7 +1524,7 @@ admRoutes.get('/entities_f', (request, response) => {
   })
 })
 admRoutes.get('/entities_f/:id', (request, response) => {
-  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails,"
+  let sql = "SELECT id, name, id_ruta, contact, phone_number, cellphone, emails, type, "
   sql += " CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM entities_f WHERE id = ?"
 
@@ -1538,10 +1543,11 @@ admRoutes.get('/entities_f/:id', (request, response) => {
   })
 }) 
 admRoutes.post('/entities_f', (request, response) => {
-  const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  const {name, id_ruta, contact, phone_number, cellphone, emails, is_active} = request.body
-  const params = [name, id_ruta, contact, phone_number, cellphone, emails, is_active === 'Si' ? true : false];
+  const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, type, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  const {name, id_ruta, contact, phone_number, cellphone, emails, type, is_active} = request.body
+  const params = [name, id_ruta, contact, phone_number, cellphone, emails, type, is_active === 'Si' ? true : false];
 
+  // console.log(sql, params)
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -1569,7 +1575,7 @@ admRoutes.delete('/entities_f/:id', (request, response) => {
   const sql = "DELETE FROM entities_f WHERE id = ?"
   const params = [request.params.id]; 
 
-  console.log(sql, params);
+  // console.log(sql, params);
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -1737,7 +1743,7 @@ admRoutes.post('/entity_params', (request, response) => {
   const {id_entity_f,id_sector_profesion,descto_ship, descto_chip, deuda_chip, deuda_ship,plazo_max,tasa,comision,mount_min,mount_max, is_active} = request.body
   const params = [id_entity_f,id_sector_profesion,descto_ship, descto_chip, deuda_chip, deuda_ship,plazo_max,tasa,comision,mount_min,mount_max,is_active === 'Si' ? true : false]
 
-  console.log(params, sql);
+  // console.log(params, sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -1788,8 +1794,8 @@ admRoutes.delete('/entity_params/:id', (request, response) => {
 
 
 admRoutes.get('/users', (request, response) => {
-  let sql = "SELECT a.id,a.email,a.name,a.phoneNumber,a.cellPhone,b.role,entity_f, c.name as Entidad,"
-  sql += " CASE WHEN a.is_new THEN 'Si' ELSE 'No' END as is_new,"
+  let sql = "SELECT a.id,a.email,a.name,a.phoneNumber,a.cellPhone,b.role, concat(b.id,'-',b.description) as Role,entity_f, concat(c.id,'-',c.name) as Entidad,"
+  sql += " CASE WHEN a.is_new THEN 'Si' ELSE 'No' END as is_new,address,"
   sql += " CASE WHEN a.is_active THEN 'Si' ELSE 'No' END as is_active"
   sql += " FROM users a"
   sql += " INNER JOIN roles b on b.id = a.id_role"
@@ -1836,7 +1842,9 @@ admRoutes.post('/users', async (request, response) => {
   sql += " address,phoneNumber,cellPhone,is_new,is_active)"
   sql += " value (?,?,?,?,?,?,?,?,true,?)"
   
-  const {id_role,email,entity_f,name,address,phoneNumber,cellPhone,is_active} = request.body
+  const {Role,email,Entidad,name,address,phoneNumber,cellPhone,is_active} = request.body
+  const id_role = Role.split('-')[0]
+  const entity_f = Entidad.split('-')[0]
   try {
     const hash = await bcrypt.hash('123456', 10)
     const params = [id_role,email,hash,entity_f,name,address,phoneNumber,cellPhone,is_active === 'Si' ? true : false]
@@ -1857,9 +1865,12 @@ admRoutes.put('/users', (request, response) => {
   sql += " address=?,phoneNumber=?,cellPhone=?,is_new=?,is_active=?"
   sql += " WHERE id=?"
 
-  const {id,id_role,email,entity_f,name,address,phoneNumber,cellPhone,is_new,is_active} = request.body
+  const {id,Role,email,Entidad,name,address,phoneNumber,cellPhone,is_new,is_active} = request.body
+  const id_role = Role.split('-')[0]
+  const entity_f = Entidad.split('-')[0]
   const params = [id_role,email,entity_f,name,address,phoneNumber,cellPhone,is_new === 'Si' ? true : false,is_active === 'Si' ? true : false, id]
 
+  // console.log(params)
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
@@ -1931,7 +1942,7 @@ admRoutes.post('/roles', (request, response) => {
   const {role,description} = request.body
   const params = [role,description]
 
-  console.log(params, sql);
+  // console.log(params, sql);
   config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
       logger.error('Error SQL:', error.message)

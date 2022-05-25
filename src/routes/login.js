@@ -39,7 +39,7 @@ const find = async (req, res, next) => {
   sql += " left join entities_f b on a.entity_f = b.id";
   sql += " left join agentes c on a.id_agente = c.id";
   sql += " WHERE email=?";
-  sql += " AND (a.is_active = true OR id_role = 1)";
+  // sql += " AND (a.is_active = true OR id_role = 1)";
 
   const { email, password } = req.body.user;
   const params = [email];
@@ -50,29 +50,28 @@ const find = async (req, res, next) => {
         cnn.connect(error => {
           if (error) {
             logger.error('Error SQL:', error.message)
-            res.status(500)
+            //res.status(500)
+            return res.status(505).json({ error: error.message });
           }
           console.log('Database server runnuning!');
         })
       } 
       if(rows) {
-        const { hash, is_active } = rows[0]
-        if(!is_active){
+        const { hash, is_active, Role } = rows[0]
+        if(!is_active && Role !== 1){
           logger.error('Error Status:', 'Usuario Bloqueado.')
-          return res.sendStatus(404);
+          return res.status(401).json({ error: "Usuario Bloqueado!" });
         }
         const validPass = await bcrypt.compare(password, hash)
         if(!validPass) {
-          logger.error('Error Seguridad:', 'Credenciales Inválidas ...!')
-          return res.status(401).json({
-            error: "Credenciales Inválidas ...!",
-          });
+          logger.error('Error Seguridad:', 'Credenciales Inválidas!')
+          return res.status(401).json({ error: "Credenciales Inválidas!" });
         }
         req.user = rows
         req.user.dataValues = rows[0]
         next();
       } else {
-        return res.sendStatus(404);
+        return res.status(404).json({ error: "Usuario no Registrado!" });
       }
     });
   } catch (error) {
