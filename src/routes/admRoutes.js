@@ -302,7 +302,7 @@ admRoutes.get('/prospects/entity_fN/:entity_f', (request, response) => {
 admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
 
   const body = JSON.stringify(request.params.entity_f).replace('"','').replace('"','')
-  const [Role='0', Tipo_Agente, Agente, Ruta, fdesde='', fhasta=''] = body.split(',')
+  let [Role='0', Tipo_Agente, Agente, Ruta, fdesde='', fhasta=''] = body.split(',')
 
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión,"
@@ -387,6 +387,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql += " left JOIN ref_person_no_family q ON q.id_prospect=a.id"
   sql += " WHERE a.entity_f = ?"
   if(fdesde !== '' && fhasta != '') {
+    fhasta = fhasta + " 23:59:59"
     sql += " and a.fcreate >= ? and a.fcreate <= ?"
   }
   if(Role !== '1') {
