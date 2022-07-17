@@ -307,7 +307,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   sql  = " SELECT a.id as 'A1ID', c.name as A2Estado,id_personal as 'A4Cédula Id', a.name as A5Nombre,"
   sql += " e.name as 'B1Sector',f.name as B2Profesión,"
   sql += " CASE WHEN profession=1 THEN 'Empresa Privada' WHEN profession=3 THEN 'Educador' WHEN profession=4 THEN t.name WHEN profession=5 THEN m.titulo WHEN  profession=6 THEN r.name WHEN profession=7 THEN s.name ELSE n.titulo END as 'B3Ocupación',"
-  sql += " salary as B5Salario, loanPP as 'B6Préstamo Personal', cashOnHand as 'B7Efectivo en Mano', plazo as B8Plazo,"
+  sql += " salary as B5Salario, loanPP as 'B6Préstamo Personal', cashOnHand as 'B7Efectivo en Mano', plazo as B8Plazo, monthlyPay as B9Letra,"
   sql += " loanAuto as 'C1Préstamo Automóvil', loanTC as 'C2Préstamo TC', loanHip as 'C3Préstamo Hipoteca',"
   sql += " a.email as C5Email,"
   sql += " k.name as 'C5Estado Civil',"
@@ -430,10 +430,13 @@ admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
   })
 })
 admRoutes.put('/prospects/entity_f', (request, response) => {
-  const sql = "UPDATE prospects SET estado=?, comentarios=?, ejecutivo=?, fupdate=now() WHERE id = ?"
-  
+  let sql = "UPDATE prospects SET estado=?, comentarios=?, ejecutivo=?, loanPP=?, plazo=?, monthlyPay=?,"
+  sql += "fupdate=now() WHERE id = ?"
+
   const body = request.body
-  const params =  [body.estado, body.comentarios, body.ejecutivo, body.id ]
+  // console.log(body)
+  
+  const params =  [body.estado, body.comentarios, body.ejecutivo, body.monto, body.plazo, body.letra, body.id ]
 
   console.log(sql, params)
   config.cnn.query(sql, params, (error, results) => {
