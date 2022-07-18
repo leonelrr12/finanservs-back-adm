@@ -207,12 +207,12 @@ fileRoutes.get('/datosProspect/:id', async (req, res) => {
 
   let sql2 = ""
   sql2 += " select concat(name,' ',apellido) as nombreCompleto,"
-  sql2 += " cellphone as celular, parentesco as parentesco"
+  sql2 += " cellphone as celular, parentesco as parentesco, coalesce(work_name,'N/A') as trabajo"
   sql2 += " from ref_person_family"
   sql2 += " where id_prospect = ?"
   sql2 += " union all "
   sql2 += " select concat(name,' ',apellido) as nombreCompleto,"
-  sql2 += " cellphone as celular, parentesco as parentesco"
+  sql2 += " cellphone as celular, parentesco as parentesco, coalesce(work_name,'N/A') as trabajo"
   sql2 += " from ref_person_no_family"
   sql2 += " where id_prospect = ?"
 
