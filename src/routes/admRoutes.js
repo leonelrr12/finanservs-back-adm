@@ -397,7 +397,7 @@ admRoutes.get('/prospects/entity_f/:entity_f', (request, response) => {
   }
 
   const params = [Ruta, fdesde, fhasta, Agente];
-  // console.log(Ruta, fdesde, fhasta, sql)
+  console.log(Ruta, fdesde, fhasta, sql)
 
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
@@ -1271,7 +1271,9 @@ admRoutes.delete('/payments/:id', (request, response) => {
 
 
 admRoutes.get('/estados_tramite', (request, response) => {
-  const sql = "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active FROM estados_tramite"
+  let sql = '' 
+  sql += "SELECT id, name, CASE WHEN is_active THEN 'Si' ELSE 'No' END as is_active"
+  sql += " FROM estados_tramite"
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
