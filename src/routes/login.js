@@ -4,19 +4,17 @@ const loginRouter = require("express").Router();
 const config = require("../utils/config");
 const logger = require("../utils/logger");
 
+
 const show = async (req, res, next) => {
   try {
     res.json({
-      user: {
-        ...req.user.dataValues,
-        jwtToken: req.token,
-      },
+      ...req.user.dataValues,
+      jwtToken: req.token,
     });
   } catch (error) {
     next(error);
   }
 };
-
 const generateToken = async (req, res, next) => {
   req.token = jwt.sign(
     {
@@ -29,7 +27,6 @@ const generateToken = async (req, res, next) => {
   );
   next();
 };
-
 const find = async (req, res, next) => {
   let sql = "SELECT a.id, hash, a.name, a.is_active, is_new, id_role as Role,";
   sql += " coalesce(id_ruta, '0') as Ruta,";
@@ -39,7 +36,6 @@ const find = async (req, res, next) => {
   sql += " left join entities_f b on a.entity_f = b.id";
   sql += " left join agentes c on a.id_agente = c.id";
   sql += " WHERE email=?";
-  // sql += " AND (a.is_active = true OR id_role = 1)";
 
   const { email, password } = req.body.user;
   const params = [email];
@@ -50,20 +46,19 @@ const find = async (req, res, next) => {
         cnn.connect(error => {
           if (error) {
             logger.error('Error SQL:', error.message)
-            //res.status(500)
             return res.status(505).json({ error: error.message });
           }
           console.log('Database server runnuning!');
         })
-      } 
-      if(rows) {
+      }
+      if (rows) {
         const { hash, is_active, Role } = rows[0]
-        if(!is_active && Role !== 1){
+        if (!is_active && Role !== 1) {
           logger.error('Error Status:', 'Usuario Bloqueado.')
           return res.status(401).json({ error: "Usuario Bloqueado!" });
         }
         const validPass = await bcrypt.compare(password, hash)
-        if(!validPass) {
+        if (!validPass) {
           logger.error('Error Seguridad:', 'Credenciales Inválidas!')
           return res.status(401).json({ error: "Credenciales Inválidas!" });
         }
@@ -78,7 +73,6 @@ const find = async (req, res, next) => {
     next(error);
   }
 }
-
 loginRouter.route("/signin").post(find, generateToken, show);
 
 loginRouter.get("/users", (request, response) => {
@@ -92,7 +86,7 @@ loginRouter.get("/users", (request, response) => {
   config.cnn.query(sql, (error, results) => {
     if (error) {
       logger.error("Error SQL:", error.message);
-      response.status(500);
+      return response.status(500);
     }
     if (results.length > 0) {
       response.json(results);
@@ -114,7 +108,7 @@ loginRouter.get("/new-user/:email", (request, response) => {
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error("Error SQL:", error.message);
-      response.status(500);
+      return response.status(500);
     }
     if (results.length > 0) {
       response.json(results[0].is_new);
@@ -154,7 +148,7 @@ loginRouter.put("/chgpwd", async (request, response) => {
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error("Error SQL:", error.message);
-      response.status(500);
+      return response.status(500);
     }
     response.send("Ok!");
   });

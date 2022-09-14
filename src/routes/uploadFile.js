@@ -118,7 +118,7 @@ fileRoutes.get('/file', async (request, response) => {
       response.send('Ok')
       // response.download(__dirname + '../../../public/' + name, name, function(err){
       //   if (err) {
-      //     response.status(500).end()
+      //     return response.status(500).end()
       //     console.log(err);
       //   } else {
       //     response.status(201).end()
