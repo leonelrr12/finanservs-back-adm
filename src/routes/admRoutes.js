@@ -450,7 +450,7 @@ admRoutes.put('/prospects/estado', (request, response) => {
 
 
 admRoutes.get('/prospects/update', (request, response) => {
-  let sql = "select id,id_personal,name,email,cellphone FROM prospects"
+  let sql = "select id,id_personal,name,cellphone FROM prospects"
 
   config.cnn.query(sql, (error, results) => {
     if (error) {
@@ -465,7 +465,7 @@ admRoutes.get('/prospects/update', (request, response) => {
   })
 })
 admRoutes.get('/prospects/update/:id', (request, response) => {
-  let sql = "select id,id_personal,name,fname,fname_2,lname,lname_2,"
+  let sql = "select id,id_personal,fname,fname_2,lname,lname_2,"
   sql += " entity_f,estado,email,cellphone,phoneNumber,gender,birthDate,"
   sql += " contractType,jobSector,occupation,paymentFrecuency,profession,"
   sql += " civil_status,province,district,county,"
@@ -474,7 +474,7 @@ admRoutes.get('/prospects/update/:id', (request, response) => {
   sql += " work_address,work_phone,work_phone_ext,work_month,"
   sql += " work_prev_name,work_prev_month,work_prev_salary,"
   sql += " disponible,salary,honorarios,viaticos,nationality,"
-  sql += " calle, barriada_edificio,no_casa_piso_apto,fcreate"
+  sql += " calle,barriada_edificio,no_casa_piso_apto,fcreate"
   sql += " FROM prospects"
   sql += " WHERE id = ?"
 
@@ -494,7 +494,7 @@ admRoutes.get('/prospects/update/:id', (request, response) => {
   })
 })
 admRoutes.put('/prospects/update', (request, response) => {
-  let sql = "update prospects ("
+  let sql = "update prospects SET"
   sql += " name=?,fname=?,fname_2=?,lname=?,lname_2=?,"
   sql += " entity_f=?,estado=?,email=?,cellphone=?,phoneNumber=?,gender=?,birthDate=?,"
   sql += " contractType=?,jobSector=?,occupation=?,paymentFrecuency=?,profession=?,"
@@ -508,9 +508,8 @@ admRoutes.put('/prospects/update', (request, response) => {
   sql += " fupdate=now() WHERE id = ?"
 
   const body = request.body
-  console.log(body)
 
-  let { id, name, fname, fname_2, lname, lname_2 } = body
+  let { id, fname, fname_2, lname, lname_2 } = body
   let { entity_f, estado, email, cellphone, phoneNumber } = body
   let { gender, birthDate: BDH, contractType, jobSector, occupation, paymentFrecuency } = body
   let { profession, civil_status, province, district, county } = body
@@ -519,8 +518,16 @@ admRoutes.put('/prospects/update', (request, response) => {
   let { work_address = '', work_phone = '', work_phone_ext = '', work_month = 0 } = body
   let { work_prev_name = 'N/A', work_prev_month = 0, work_prev_salary = 0 } = body
   let { disponible = 0, salary, honorarios = 0, viaticos = 0, nationality = 0 } = body
-  let { street: calle, barriada_edificio, no_casa_piso_apto } = body
+  let { calle, barriada_edificio, no_casa_piso_apto } = body
 
+  let name = fname
+  if (fname_2) {
+    name += " " + fname_2
+  }
+  name += " " + lname
+  if (lname_2) {
+    name += " " + lname_2
+  }
 
   const birthDate = BDH.slice(0, 10)
   const params = [
@@ -2081,6 +2088,61 @@ admRoutes.delete('/roles/:id', (request, response) => {
     } else {
       logger.error('Error SQL:', 'No existe registro a eliminar!')
       return response.status(500)
+    }
+  })
+})
+
+admRoutes.get('/provinces', (request, response) => {
+  const sql = "SELECT * FROM provinces"
+
+  config.cnn.query(sql, (error, results) => {
+    if (error) throw error
+    if (results.length > 0) {
+      response.json(results)
+    } else {
+      response.send('Not results!')
+    }
+  })
+})
+
+admRoutes.get('/districts', (request, response) => {
+  const sql = "SELECT * FROM districts"
+
+  config.cnn.query(sql, (error, results) => {
+    if (error) throw error
+    if (results.length > 0) {
+      response.json(results)
+    } else {
+      response.send('Not results!')
+    }
+  })
+})
+
+admRoutes.get('/counties', (request, response) => {
+  const sql = "SELECT * FROM counties ORDER BY name"
+
+  config.cnn.query(sql, (error, results) => {
+    if (error) throw error
+    if (results.length > 0) {
+      response.json(results)
+    } else {
+      response.send('Not results!')
+    }
+  })
+})
+
+admRoutes.get('/nationality', (request, response) => {
+  const sql = "SELECT id, name FROM nationality WHERE is_active = true"
+
+  config.cnn.query(sql, (error, results) => {
+    if (error) {
+      logger.error('Error SQL:', error.sqlMessage)
+      return response.status(500)
+    }
+    if (results.length > 0) {
+      response.json(results)
+    } else {
+      response.send('Not results!')
     }
   })
 })
