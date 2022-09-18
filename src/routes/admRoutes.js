@@ -2,14 +2,21 @@ const bcrypt = require('bcryptjs')
 const admRoutes = require('express').Router()
 const logger = require('../utils/logger')
 const nodemailer = require('nodemailer')
-const { google } = require('googleapis')
+
+const {
+  google
+} = require('googleapis')
 const config = require('../utils/config')
 const OAuth2 = google.auth.OAuth2
 
 // const { sendEmail: key } = config
-const { sendGEmail: key } = config
+const {
+  sendGEmail: key
+} = config
 const OAuth2Client = new OAuth2(key.clientId, key.clientSecret, key.redirectUri)
-OAuth2Client.setCredentials({ refresh_token: key.refreshToken })
+OAuth2Client.setCredentials({
+  refresh_token: key.refreshToken
+})
 
 
 admRoutes.get('/', (request, response) => {
@@ -35,10 +42,96 @@ admRoutes.get('/verifyConnection', (req, res) => {
 
 
 admRoutes.post('/send-email', async (req, res) => {
+  let {
+    id,
+    email,
+    nombre,
+    cedula,
+    monto,
+    celular,
+    fcreate,
+    dias,
+    asunto,
+    mensaje,
+    email_banco,
+    email_sponsor,
+    estado,
+    comentarios
+  } = req.body
 
-  let { id, email, nombre, cedula, monto, celular,
-    fcreate, dias, asunto, mensaje, email_banco,
-    email_sponsor, estado, comentarios
+  let emails = email + ", guasimo01@gmail.com, rsanchez2565@gmail.com"
+  if (email_banco.length > 4) emails += ", " + email_banco
+  if (email_sponsor.length > 4) emails += ", " + email_sponsor
+
+  let color = " black;'"
+  if (estado === "Aprobado") color = " green;'"
+  if (estado === "Rechazado") color = " red;'"
+
+  const htmlEmail = `
+    <h2 style='color: ${color}>Nuevo Estatus: ${estado}</h2>
+    <ul>
+      <li>Solicitud No.: ${id}</li>
+      <li>Estimado: ${nombre}</li>
+      <li>Cédula No.: ${cedula}</li>
+      <li>Email: ${email}</li>
+      <li>Teléfono: ${celular}</li>
+      <li>Fecha Solicitud: ${fcreate}</li>
+      <li>Monto Solicitado: ${monto}</li>
+      <li>Dias transcurridos: ${dias}</li>
+      <li>Comentarios: ${comentarios}</li>
+    </ul>
+    <h3>Mensaje</h3>
+    <p>${mensaje}</p>
+  `
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: 'alt1.aspmx.l.google.com.',
+    port: 587,
+    secure: false, // true for 465, false for other ports 
+    auth: {
+        user: config.EMAIL_USER, // generated ethereal user
+        pass: config.EMAIL_PASS  // generated ethereal password
+    },
+    tls:{
+      rejectUnauthorized:false
+    }
+  }); 
+
+  const mailOptions = {
+    from: config.EMAIL_FROM, // sender address
+    to: emails, // list of receivers
+    subject: asunto, // Subject line
+    text: mensaje, // message body
+    html: htmlEmail, // plain text body
+  };
+
+  transporter.sendMail(mailOptions, function (err, info) {
+    if (err) {
+      return console.log(err)
+    }
+    console.log('Message sent: %s', info.messageId);   
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+    res.render('contact', { msg:'Email has been sent' });
+  })
+})
+admRoutes.post('/send-gsuit', async (req, res) => {
+  let {
+    id,
+    email,
+    nombre,
+    cedula,
+    monto,
+    celular,
+    fcreate,
+    dias,
+    asunto,
+    mensaje,
+    email_banco,
+    email_sponsor,
+    estado,
+    comentarios
   } = req.body
 
   let emails = email + ", guasimo01@gmail.com, rsanchez2565@gmail.com"
@@ -68,7 +161,7 @@ admRoutes.post('/send-email', async (req, res) => {
     `
 
     const send_mail = async () => {
-      const accessToken = await OAuth2Client.getAccessToken()
+      // const accessToken = await OAuth2Client.getAccessToken()
       try {
         const transporter = nodemailer.createTransport({
           service: 'gmail',
@@ -77,8 +170,8 @@ admRoutes.post('/send-email', async (req, res) => {
             user: key.EMAIL_USER,
             clientId: key.clientId,
             clientSecret: key.clientSecret,
-            refreshToken: key.refreshToken,
-            accessToken: accessToken
+            refreshToken: OAuth2Client.refreshToken,
+            accessToken: OAuth2Client.accessToken,
           },
           tls: {
             rejectUnauthorized: false
@@ -103,7 +196,7 @@ admRoutes.post('/send-email', async (req, res) => {
     }
     send_mail()
       .then(r => res.status(200).send('Enviado!'))
-      .catch(e => console.log(e.message))
+      .catch(e => console.log(e))
   })
 })
 admRoutes.get("/email-estado/:id", (request, response) => {
@@ -120,7 +213,9 @@ admRoutes.get("/email-estado/:id", (request, response) => {
   sql += " LEFT JOIN estados_tramite d ON d.id = a.estado"
   sql += " WHERE a.id = ?"
 
-  const { id } = request.params;
+  const {
+    id
+  } = request.params;
   const params = [id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -144,7 +239,9 @@ admRoutes.get("/sponsor/:id", (request, response) => {
   sql += " SELECT id_ref FROM referidos";
   sql += " WHERE id=? )";
 
-  const { id } = request.params;
+  const {
+    id
+  } = request.params;
   const params = [id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -509,16 +606,61 @@ admRoutes.put('/prospects/update', (request, response) => {
 
   const body = request.body
 
-  let { id, fname, fname_2, lname, lname_2 } = body
-  let { entity_f, estado, email, cellphone, phoneNumber } = body
-  let { gender, birthDate: BDH, contractType, jobSector, occupation, paymentFrecuency } = body
-  let { profession, civil_status, province, district, county } = body
-  let { loanPP, cashOnHand, plazo, reason } = body
-  let { residenceType, residenceMonthly, work_name, work_cargo } = body
-  let { work_address = '', work_phone = '', work_phone_ext = '', work_month = 0 } = body
-  let { work_prev_name = 'N/A', work_prev_month = 0, work_prev_salary = 0 } = body
-  let { disponible = 0, salary, honorarios = 0, viaticos = 0, nationality = 0 } = body
-  let { calle, barriada_edificio, no_casa_piso_apto } = body
+  let {
+    id,
+    fname,
+    fname_2,
+    lname,
+    lname_2
+  } = body
+  let {
+    entity_f,
+    estado,
+    email,
+    cellphone,
+    phoneNumber
+  } = body
+  let {
+    gender,
+    birthDate: BDH,
+    contractType,
+    jobSector,
+    occupation,
+    paymentFrecuency
+  } = body
+  let {
+    profession,
+    civil_status,
+    province,
+    district,
+    county
+  } = body
+  let {
+    loanPP,
+    cashOnHand,
+    plazo,
+    reason
+  } = body
+  let {
+    residenceType,
+    residenceMonthly,
+    work_name,
+    work_cargo
+  } = body
+  let {
+    work_address = '', work_phone = '', work_phone_ext = '', work_month = 0
+  } = body
+  let {
+    work_prev_name = 'N/A', work_prev_month = 0, work_prev_salary = 0
+  } = body
+  let {
+    disponible = 0, salary, honorarios = 0, viaticos = 0, nationality = 0
+  } = body
+  let {
+    calle,
+    barriada_edificio,
+    no_casa_piso_apto
+  } = body
 
   let name = fname
   if (fname_2) {
@@ -590,11 +732,16 @@ admRoutes.post('/sectors', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO sectors (id, name, short_name) VALUES (?, ?, ?)"
 
-    const { name, short_name } = request.body
+    const {
+      name,
+      short_name
+    } = request.body
     const params = [id, name, short_name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -609,7 +756,11 @@ admRoutes.post('/sectors', (request, response) => {
 admRoutes.put('/sectors', (request, response) => {
   const sql = "UPDATE sectors SET name=?, short_name=? WHERE id = ?"
 
-  const { id, name, short_name } = request.body
+  const {
+    id,
+    name,
+    short_name
+  } = request.body
   const params = [name, short_name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -679,11 +830,15 @@ admRoutes.post('/civilstatus', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO civil_status (id, name) VALUES (?, ?)"
 
-    const { name } = request.body
+    const {
+      name
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -698,7 +853,10 @@ admRoutes.post('/civilstatus', (request, response) => {
 admRoutes.put('/civilstatus', (request, response) => {
   const sql = "UPDATE civil_status SET name=? WHERE id = ?"
 
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -768,11 +926,15 @@ admRoutes.post('/profesions', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO profesions (id, name) VALUES (?, ?)"
 
-    const { name } = request.body
+    const {
+      name
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -787,7 +949,10 @@ admRoutes.post('/profesions', (request, response) => {
 admRoutes.put('/profesions', (request, response) => {
   const sql = "UPDATE profesions SET name=? WHERE id = ?"
 
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -877,11 +1042,15 @@ admRoutes.post('/profesions_lw', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO profesions_lw (id, titulo) VALUES (?, ?)"
 
-    const { name } = request.body
+    const {
+      name
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -895,7 +1064,10 @@ admRoutes.post('/profesions_lw', (request, response) => {
 })
 admRoutes.put('/profesions_lw', (request, response) => {
   const sql = "UPDATE profesions_lw SET titulo=? WHERE id = ?"
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -965,11 +1137,15 @@ admRoutes.post('/institutions', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO institutions (id, name) VALUES (?, ?)"
 
-    const { name } = request.body
+    const {
+      name
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -984,7 +1160,10 @@ admRoutes.post('/institutions', (request, response) => {
 admRoutes.put('/institutions', (request, response) => {
   const sql = "UPDATE institutions SET name=? WHERE id = ?"
 
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1054,11 +1233,15 @@ admRoutes.post('/planillas_j', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO planillas_j (id, name) VALUES (?, ?)"
 
-    const { name } = request.body
+    const {
+      name
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -1073,7 +1256,10 @@ admRoutes.post('/planillas_j', (request, response) => {
 admRoutes.put('/planillas_j', (request, response) => {
   const sql = "UPDATE planillas_j SET name=? WHERE id = ?"
 
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1143,11 +1329,16 @@ admRoutes.post('/housings', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO housings (id, name, is_active) VALUES (?, ?, ?)"
 
-    const { name, is_active } = request.body
+    const {
+      name,
+      is_active
+    } = request.body
     const params = [id, name, is_active === 'Si' ? true : false];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -1162,7 +1353,11 @@ admRoutes.post('/housings', (request, response) => {
 admRoutes.put('/housings', (request, response) => {
   const sql = "UPDATE housings SET name=?, is_active=? WHERE id = ?"
 
-  const { id, name, is_active } = request.body
+  const {
+    id,
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1232,11 +1427,16 @@ admRoutes.post('/purposes', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO purposes (id, name, is_active) VALUES (?, ?, ?)"
 
-    const { name, is_active } = request.body
+    const {
+      name,
+      is_active
+    } = request.body
     const params = [id, name, is_active === 'Si' ? true : false];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -1251,7 +1451,11 @@ admRoutes.post('/purposes', (request, response) => {
 admRoutes.put('/purposes', (request, response) => {
   const sql = "UPDATE purposes SET name=?, is_active=? WHERE id = ?"
 
-  const { id, name, is_active } = request.body
+  const {
+    id,
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1321,11 +1525,16 @@ admRoutes.post('/payments', (request, response) => {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    const { id } = results[0]
+    const {
+      id
+    } = results[0]
 
     const sql = "INSERT INTO payments (id, name) VALUES (?, ?)"
 
-    const { name, is_active } = request.body
+    const {
+      name,
+      is_active
+    } = request.body
     const params = [id, name];
 
     config.cnn.query(sql, params, (error, results, next) => {
@@ -1340,7 +1549,10 @@ admRoutes.post('/payments', (request, response) => {
 admRoutes.put('/payments', (request, response) => {
   const sql = "UPDATE payments SET name=? WHERE id = ?"
 
-  const { id, name } = request.body
+  const {
+    id,
+    name
+  } = request.body
   const params = [name, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1406,7 +1618,10 @@ admRoutes.get('/estados_tramite/:id', (request, response) => {
 admRoutes.post('/estados_tramite', (request, response) => {
   const sql = "INSERT INTO estados_tramite (name, is_active) VALUES (?, ?)"
 
-  const { name, is_active } = request.body
+  const {
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false];
 
   // console.log(sql);
@@ -1421,7 +1636,11 @@ admRoutes.post('/estados_tramite', (request, response) => {
 admRoutes.put('/estados_tramite', (request, response) => {
   const sql = "UPDATE estados_tramite SET name=?, is_active=? WHERE id = ?"
 
-  const { id, name, is_active } = request.body
+  const {
+    id,
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1489,7 +1708,10 @@ admRoutes.get('/type_documents/:id', (request, response) => {
 admRoutes.post('/type_documents', (request, response) => {
   const sql = "INSERT INTO type_documents (name, is_active) VALUES (?, ?)"
 
-  const { name, is_active } = request.body
+  const {
+    name,
+    is_active
+  } = request.body
   const params = [id, name, is_active === 'Si' ? true : false];
 
   config.cnn.query(sql, params, (error, results, next) => {
@@ -1503,7 +1725,11 @@ admRoutes.post('/type_documents', (request, response) => {
 admRoutes.put('/type_documents', (request, response) => {
   const sql = "UPDATE type_documents SET name=?, is_active=? WHERE id = ?"
 
-  const { id, name, is_active } = request.body
+  const {
+    id,
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1569,7 +1795,10 @@ admRoutes.get('/terms_loan/:id', (request, response) => {
 admRoutes.post('/terms_loan', (request, response) => {
   const sql = "INSERT INTO terms_loan (name, is_active) VALUES (?, ?)"
 
-  const { name, is_active } = request.body
+  const {
+    name,
+    is_active
+  } = request.body
   const params = [id, name, is_active === 'Si' ? true : false];
 
   config.cnn.query(sql, params, (error, results, next) => {
@@ -1583,7 +1812,11 @@ admRoutes.post('/terms_loan', (request, response) => {
 admRoutes.put('/terms_loan', (request, response) => {
   const sql = "UPDATE terms_loan SET name=?, is_active=? WHERE id = ?"
 
-  const { id, name, is_active } = request.body
+  const {
+    id,
+    name,
+    is_active
+  } = request.body
   const params = [name, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1652,7 +1885,16 @@ admRoutes.get('/entities_f/:id', (request, response) => {
 })
 admRoutes.post('/entities_f', (request, response) => {
   const sql = "INSERT INTO entities_f (name, id_ruta, contact, phone_number, cellphone, emails, type, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-  const { name, id_ruta, contact, phone_number, cellphone, emails, type, is_active } = request.body
+  const {
+    name,
+    id_ruta,
+    contact,
+    phone_number,
+    cellphone,
+    emails,
+    type,
+    is_active
+  } = request.body
   const params = [name, id_ruta, contact, phone_number, cellphone, emails, type, is_active === 'Si' ? true : false];
 
   // console.log(sql, params)
@@ -1668,7 +1910,16 @@ admRoutes.post('/entities_f', (request, response) => {
 admRoutes.put('/entities_f', (request, response) => {
   const sql = "UPDATE entities_f SET name=?, id_ruta=?, contact=?, phone_number=?, cellphone=?, emails=?, is_active=? WHERE id = ?"
 
-  const { id, name, id_ruta, contact, phone_number, cellphone, emails, is_active } = request.body
+  const {
+    id,
+    name,
+    id_ruta,
+    contact,
+    phone_number,
+    cellphone,
+    emails,
+    is_active
+  } = request.body
   const params = [name, id_ruta, contact, phone_number, cellphone, emails, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1740,7 +1991,12 @@ admRoutes.get('/sector_profesion/:id', (request, response) => {
 admRoutes.post('/sector_profesion', (request, response) => {
   const sql = "INSERT INTO sector_profesion (id_sector, id_profesion, is_active) VALUES (?, ?)"
 
-  const { id, id_sector, id_profesion, is_active } = request.body
+  const {
+    id,
+    id_sector,
+    id_profesion,
+    is_active
+  } = request.body
   const params = [d_sector, id_profesion, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results, next) => {
@@ -1754,7 +2010,12 @@ admRoutes.post('/sector_profesion', (request, response) => {
 admRoutes.put('/sector_profesion', (request, response) => {
   const sql = "UPDATE sector_profesion SET id_sector=?, id_profesion=?, is_active=? WHERE id = ?"
 
-  const { id, id_sector, id_profesion, is_active } = request.body
+  const {
+    id,
+    id_sector,
+    id_profesion,
+    is_active
+  } = request.body
   const params = [d_sector, id_profesion, is_active === 'Si' ? true : false, id];
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1848,7 +2109,20 @@ admRoutes.post('/entity_params', (request, response) => {
   sql += " plazo_max, tasa, comision, mount_min, mount_max, is_active"
   sql += " ) VALUE (?,?,?,?,?,?,?,?,?,?,?,?)"
 
-  const { id_entity_f, id_sector_profesion, descto_ship, descto_chip, deuda_chip, deuda_ship, plazo_max, tasa, comision, mount_min, mount_max, is_active } = request.body
+  const {
+    id_entity_f,
+    id_sector_profesion,
+    descto_ship,
+    descto_chip,
+    deuda_chip,
+    deuda_ship,
+    plazo_max,
+    tasa,
+    comision,
+    mount_min,
+    mount_max,
+    is_active
+  } = request.body
   const params = [id_entity_f, id_sector_profesion, descto_ship, descto_chip, deuda_chip, deuda_ship, plazo_max, tasa, comision, mount_min, mount_max, is_active === 'Si' ? true : false]
 
   // console.log(params, sql);
@@ -1871,7 +2145,21 @@ admRoutes.put('/entity_params', (request, response) => {
   sql += " mount_min=?,mount_max=?,plazo_max=?,tasa=?,comision=?,is_active=?"
   sql += " WHERE id=?"
 
-  const { id, id_entity_f, id_sector_profesion, descto_ship, descto_chip, deuda_chip, deuda_ship, plazo_max, tasa, comision, mount_min, mount_max, is_active } = request.body
+  const {
+    id,
+    id_entity_f,
+    id_sector_profesion,
+    descto_ship,
+    descto_chip,
+    deuda_chip,
+    deuda_ship,
+    plazo_max,
+    tasa,
+    comision,
+    mount_min,
+    mount_max,
+    is_active
+  } = request.body
   const params = [id_entity_f, id_sector_profesion, descto_chip, descto_ship, deuda_chip, deuda_ship, mount_min, mount_max, plazo_max, tasa, comision, is_active === 'Si' ? true : false, id]
 
   config.cnn.query(sql, params, (error, results) => {
@@ -1950,7 +2238,16 @@ admRoutes.post('/users', async (request, response) => {
   sql += " address,phoneNumber,cellPhone,is_new,is_active)"
   sql += " value (?,?,?,?,?,?,?,?,true,?)"
 
-  const { Role, email, Entidad, name, address, phoneNumber, cellPhone, is_active } = request.body
+  const {
+    Role,
+    email,
+    Entidad,
+    name,
+    address,
+    phoneNumber,
+    cellPhone,
+    is_active
+  } = request.body
   const id_role = Role.split('-')[0]
   const entity_f = Entidad.split('-')[0]
   try {
@@ -1973,7 +2270,18 @@ admRoutes.put('/users', (request, response) => {
   sql += " address=?,phoneNumber=?,cellPhone=?,is_new=?,is_active=?"
   sql += " WHERE id=?"
 
-  const { id, Role, email, Entidad, name, address, phoneNumber, cellPhone, is_new, is_active } = request.body
+  const {
+    id,
+    Role,
+    email,
+    Entidad,
+    name,
+    address,
+    phoneNumber,
+    cellPhone,
+    is_new,
+    is_active
+  } = request.body
   const id_role = Role.split('-')[0]
   const entity_f = Entidad.split('-')[0]
   const params = [id_role, email, entity_f, name, address, phoneNumber, cellPhone, is_new === 'Si' ? true : false, is_active === 'Si' ? true : false, id]
@@ -2047,7 +2355,10 @@ admRoutes.post('/roles', (request, response) => {
   let sql = "INSERT INTO roles (role,description)"
   sql += " value (?,?)"
 
-  const { role, description } = request.body
+  const {
+    role,
+    description
+  } = request.body
   const params = [role, description]
 
   // console.log(params, sql);
@@ -2063,7 +2374,11 @@ admRoutes.put('/roles', (request, response) => {
   let sql = "UPDATE roles SET role=?,description=?"
   sql += " WHERE id=?"
 
-  const { id, role, description } = request.body
+  const {
+    id,
+    role,
+    description
+  } = request.body
   const params = [role, description, id]
 
   config.cnn.query(sql, params, (error, results) => {

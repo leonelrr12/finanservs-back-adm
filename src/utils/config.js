@@ -13,8 +13,7 @@ const sendGEmail = {
   EMAIL_FROM: process.env.EMAIL_FROM,
   EMAIL_PORT: process.env.EMAIL_PORT,
   clientId: '975688741054-qsre2625tkgveh5jjebdic210b9c2l7g.apps.googleusercontent.com',
-  clientSecret: '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',
-  refreshToken: '1//0410GTs7ttAJZCgYIARAAGAQSNwF-L9Ir4KaK6nX5h6m_AzNe1F1eQ-jh9JXUvS8lhwIBerNnAFKHyDqayFNo0Dol-kfHfYi0BP0',
+  clientSecret: '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',
   redirectUri: 'https://developers.google.com/oauthplayground'
 }
 

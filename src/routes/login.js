@@ -46,7 +46,7 @@ const find = async (req, res, next) => {
         cnn.connect(error => {
           if (error) {
             logger.error('Error SQL:', error.message)
-            return res.status(505).json({ error: error.message });
+            return res.status(201).json({ error: error.message });
           }
           console.log('Database server runnuning!');
         })
@@ -55,18 +55,19 @@ const find = async (req, res, next) => {
         const { hash, is_active, Role } = rows[0]
         if (!is_active && Role !== 1) {
           logger.error('Error Status:', 'Usuario Bloqueado.')
-          return res.status(401).json({ error: "Usuario Bloqueado!" });
+          return res.status(201).json({ error: "Usuario Bloqueado!" });
         }
         const validPass = await bcrypt.compare(password, hash)
         if (!validPass) {
           logger.error('Error Seguridad:', 'Credenciales Inválidas!')
-          return res.status(401).json({ error: "Credenciales Inválidas!" });
+          return res.status(201).json({ error: "Credenciales Inválidas!" });
         }
+        delete rows[0].hash
         req.user = rows
         req.user.dataValues = rows[0]
         next();
       } else {
-        return res.status(404).json({ error: "Usuario no Registrado!" });
+        return res.status(201).json({ error: "Usuario no Registrado!" });
       }
     });
   } catch (error) {
