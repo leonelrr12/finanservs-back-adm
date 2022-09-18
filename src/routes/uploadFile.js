@@ -145,7 +145,7 @@ fileRoutes.get('/prospectsPDF/:entity_f/:estado', async (req, res) => {
   const { entity_f, estado } = req.params
 
   let sql = "SELECT a.id, a.name, id_personal as cedula, a.email, a.cellphone as celular, a.phoneNumber as telefono,"
-  sql += " date_format(fcreate, '%d/%m/%Y')  as fecha,"
+  sql += " date_format(fcreate, '%d/%m/%Y %h:%i%p')  as fecha,"
   sql += " loanPP as monto, e.name as sector, c.name estado, o.name as ejecutivo, comentarios"
   sql += " FROM finanservs.prospects a"
   sql += " INNER JOIN finanservs.estados_tramite c ON c.id=a.estado"
@@ -194,7 +194,7 @@ fileRoutes.get('/datosProspect/:id', async (req, res) => {
   sql += " h.name as provincia, i.name as distrito, j.name as corregimiento,"
   sql += " barrio_casa_calle as barrio_Casa_Calle,"
   sql += " barriada_edificio, calle, no_casa_piso_apto, c.name as estado,"
-  sql += " date_format(fcreate, '%d/%m/%Y') as fechaSolicitud,"
+  sql += " date_format(fcreate, '%d/%m/%Y %h:%i%p') as fechaSolicitud,"
   sql += " loanPP as monto, plazo, coalesce(monthlyPay, 0) as letra"
   sql += " FROM prospects a"
   sql += " INNER JOIN estados_tramite c ON c.id=a.estado"
