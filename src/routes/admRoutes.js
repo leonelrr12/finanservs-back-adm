@@ -84,38 +84,56 @@ admRoutes.post('/send-email', async (req, res) => {
     <p>${mensaje}</p>
   `
 
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    host: 'alt1.aspmx.l.google.com.',
-    port: 587,
-    secure: false, // true for 465, false for other ports 
-    auth: {
-        user: config.EMAIL_USER, // generated ethereal user
-        pass: config.EMAIL_PASS  // generated ethereal password
-    },
-    tls:{
-      rejectUnauthorized:false
+  const CLIENT_ID = "325362870377-t7hk5cea4j61cgpo8b49orig1i6ionvc.apps.googleusercontent.com"
+  const CLIENT_SECRET = "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"
+  const REDIRECT_URI = "https://developers.google.com/oauthplayground"
+  const REFRESH_TOKEN = "1//04Oz8WYSBzx4HCgYIARAAGAQSNwF-L9Ir-ITR3SOWXPwYVWfILDdU8f0jw4qpa_oBzBhRYXytn9MsPUae--2MW2UTOzu2jnaPqxc"
+
+  const oAuth2Client = new google.auth.OAuth2(
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI
+  )
+
+  oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
+
+  const send_mail = async () => {
+    try {
+      const accessToken = await oAuth2Client.getAccessToken()
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: 'guasimo12@gmail.com',
+          clientId: CLIENT_ID,
+          clientSecret: CLIENT_SECRET,
+          refreshToken: REFRESH_TOKEN,
+          accessToken: accessToken,
+        }
+      })
+
+      const mailOptions = {
+        from: "Pagina web de Finanservs <rsanchez@finanservs.com>",
+        to: emails,
+        subject: asunto,
+        text: mensaje,
+        html: htmlEmail
+      }
+
+      const result = await transporter.sendMail(mailOptions)
+      transporter.close()
+      console.log(result)
+      return result
+    } catch (err) {
+      console.log('Estamos aqui: ', err)
     }
-  }); 
-
-  const mailOptions = {
-    from: config.EMAIL_FROM, // sender address
-    to: emails, // list of receivers
-    subject: asunto, // Subject line
-    text: mensaje, // message body
-    html: htmlEmail, // plain text body
-  };
-
-  transporter.sendMail(mailOptions, function (err, info) {
-    if (err) {
-      return console.log(err)
-    }
-    console.log('Message sent: %s', info.messageId);   
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-
-    res.render('contact', { msg:'Email has been sent' });
-  })
+  }
+  send_mail()
+    .then(r => res.status(200).send('Enviado!'))
+    .catch(e => console.log(e))
 })
+
+
 admRoutes.post('/send-gsuit', async (req, res) => {
   let {
     id,
