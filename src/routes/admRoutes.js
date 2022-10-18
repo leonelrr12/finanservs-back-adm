@@ -1,22 +1,12 @@
 const bcrypt = require('bcryptjs')
 const admRoutes = require('express').Router()
-const logger = require('../utils/logger')
 const nodemailer = require('nodemailer')
+const { google } = require('googleapis')
 
-const {
-  google
-} = require('googleapis')
+const logger = require('../utils/logger')
 const config = require('../utils/config')
-const OAuth2 = google.auth.OAuth2
 
-// const { sendEmail: key } = config
-const {
-  sendGEmail: key
-} = config
-const OAuth2Client = new OAuth2(key.clientId, key.clientSecret, key.redirectUri)
-OAuth2Client.setCredentials({
-  refresh_token: key.refreshToken
-})
+const { sendGEmail: keyGmail } = config
 
 
 admRoutes.get('/', (request, response) => {
@@ -84,10 +74,21 @@ admRoutes.post('/send-email', async (req, res) => {
     <p>${mensaje}</p>
   `
 
-  const CLIENT_ID = "325362870377-t7hk5cea4j61cgpo8b49orig1i6ionvc.apps.googleusercontent.com"
-  const CLIENT_SECRET = "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"
-  const REDIRECT_URI = "https://developers.google.com/oauthplayground"
-  const REFRESH_TOKEN = "1//04Oz8WYSBzx4HCgYIARAAGAQSNwF-L9Ir-ITR3SOWXPwYVWfILDdU8f0jw4qpa_oBzBhRYXytn9MsPUae--2MW2UTOzu2jnaPqxc"
+  // const CLIENT_ID = "325362870377-t7hk5cea4j61cgpo8b49orig1i6ionvc.apps.googleusercontent.com"
+  // const CLIENT_SECRET = "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"
+  // const REDIRECT_URI = "https://developers.google.com/oauthplayground"
+  // const REFRESH_TOKEN = "1//04Oz8WYSBzx4HCgYIARAAGAQSNwF-L9Ir-ITR3SOWXPwYVWfILDdU8f0jw4qpa_oBzBhRYXytn9MsPUae--2MW2UTOzu2jnaPqxc"
+  
+  const CLIENT_ID = keyGmail.CLIENT_ID
+  const CLIENT_SECRET = keyGmail.CLIENT_SECRET
+  const REDIRECT_URI = keyGmail.REDIRECT_URI
+  const REFRESH_TOKEN = keyGmail.REFRESH_TOKEN
+
+  console.log(    
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI,
+    REFRESH_TOKEN)
 
   const oAuth2Client = new google.auth.OAuth2(
     CLIENT_ID,
@@ -104,7 +105,7 @@ admRoutes.post('/send-email', async (req, res) => {
         service: 'gmail',
         auth: {
           type: 'OAuth2',
-          user: 'guasimo12@gmail.com',
+          user: keyGmail.EMAIL_USER,
           clientId: CLIENT_ID,
           clientSecret: CLIENT_SECRET,
           refreshToken: REFRESH_TOKEN,
@@ -134,89 +135,6 @@ admRoutes.post('/send-email', async (req, res) => {
 })
 
 
-admRoutes.post('/send-gsuit', async (req, res) => {
-  let {
-    id,
-    email,
-    nombre,
-    cedula,
-    monto,
-    celular,
-    fcreate,
-    dias,
-    asunto,
-    mensaje,
-    email_banco,
-    email_sponsor,
-    estado,
-    comentarios
-  } = req.body
-
-  let emails = email + ", guasimo01@gmail.com, rsanchez2565@gmail.com"
-  if (email_banco.length > 4) emails += ", " + email_banco
-  if (email_sponsor.length > 4) emails += ", " + email_sponsor
-
-  nodemailer.createTestAccount((err, account) => {
-    let color = " black;'"
-    if (estado === "Aprobado") color = " green;'"
-    if (estado === "Rechazado") color = " red;'"
-
-    const htmlEmail = `
-      <h2 style='color: ${color}>Nuevo Estatus: ${estado}</h2>
-      <ul>
-        <li>Solicitud No.: ${id}</li>
-        <li>Estimado: ${nombre}</li>
-        <li>Cédula No.: ${cedula}</li>
-        <li>Email: ${email}</li>
-        <li>Teléfono: ${celular}</li>
-        <li>Fecha Solicitud: ${fcreate}</li>
-        <li>Monto Solicitado: ${monto}</li>
-        <li>Dias transcurridos: ${dias}</li>
-        <li>Comentarios: ${comentarios}</li>
-      </ul>
-      <h3>Mensaje</h3>
-      <p>${mensaje}</p>
-    `
-
-    const send_mail = async () => {
-      // const accessToken = await OAuth2Client.getAccessToken()
-      try {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            type: 'OAuth2',
-            user: key.EMAIL_USER,
-            clientId: key.clientId,
-            clientSecret: key.clientSecret,
-            refreshToken: OAuth2Client.refreshToken,
-            accessToken: OAuth2Client.accessToken,
-          },
-          tls: {
-            rejectUnauthorized: false
-          }
-        })
-
-        const mailOptions = {
-          from: key.EMAIL_FROM,
-          to: emails,
-          subject: asunto,
-          text: mensaje,
-          html: htmlEmail
-        }
-
-        const result = await transporter.sendMail(mailOptions)
-        transporter.close()
-        // console.log(result)
-        return result
-      } catch (err) {
-        console.log('Estamos aqui: ', err)
-      }
-    }
-    send_mail()
-      .then(r => res.status(200).send('Enviado!'))
-      .catch(e => console.log(e))
-  })
-})
 admRoutes.get("/email-estado/:id", (request, response) => {
   let sql = "SELECT a.id, id_personal as cedula,"
   sql += " a.name as nombre, a.email as email, a.cellphone as celular,"

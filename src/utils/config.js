@@ -9,29 +9,11 @@ const AWS_Secret_access_key = process.env.AWS_Secret_access_key
 //SMTP G-Suit
 const sendGEmail = {
   EMAIL_USER: process.env.EMAIL_USER,
-  EMAIL_PASS: process.env.EMAIL_PASS,
-  EMAIL_FROM: process.env.EMAIL_FROM,
-  EMAIL_PORT: process.env.EMAIL_PORT,
-  clientId: '975688741054-qsre2625tkgveh5jjebdic210b9c2l7g.apps.googleusercontent.com',
-  clientSecret: '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',
-  redirectUri: 'https://developers.google.com/oauthplayground'
+  CLIENT_ID: process.env.CLIENT_ID,
+  CLIENT_SECRET: process.env.CLIENT_SECRET,
+  REDIRECT_URI: process.env.REDIRECT_URI,
+  REFRESH_TOKEN: process.env.REFRESH_TOKEN
 }
-
-
-// MySql DIgital Ocean-2
-// const cnn = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     database: process.env.DATABASE,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PWD,
-//     port: process.env.PORTDB
-// })
-
-// Check connection
-// cnn.connect(error => {
-//   if (error) throw error;
-//   console.log('Database server runnuning!');
-// })
 
 
 // MySql DIgital Ocean-2
