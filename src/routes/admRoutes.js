@@ -74,21 +74,10 @@ admRoutes.post('/send-email', async (req, res) => {
     <p>${mensaje}</p>
   `
 
-  // const CLIENT_ID = "325362870377-t7hk5cea4j61cgpo8b49orig1i6ionvc.apps.googleusercontent.com"
-  // const CLIENT_SECRET = "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"
-  // const REDIRECT_URI = "https://developers.google.com/oauthplayground"
-  // const REFRESH_TOKEN = "1//04Oz8WYSBzx4HCgYIARAAGAQSNwF-L9Ir-ITR3SOWXPwYVWfILDdU8f0jw4qpa_oBzBhRYXytn9MsPUae--2MW2UTOzu2jnaPqxc"
-  
   const CLIENT_ID = keyGmail.CLIENT_ID
   const CLIENT_SECRET = keyGmail.CLIENT_SECRET
   const REDIRECT_URI = keyGmail.REDIRECT_URI
   const REFRESH_TOKEN = keyGmail.REFRESH_TOKEN
-
-  console.log(    
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REDIRECT_URI,
-    REFRESH_TOKEN)
 
   const oAuth2Client = new google.auth.OAuth2(
     CLIENT_ID,
@@ -135,7 +124,12 @@ admRoutes.post('/send-email', async (req, res) => {
 })
 
 
-admRoutes.get("/email-estado/:id", (request, response) => {
+admRoutes.get("/email-estado/:id", async(request, response) => {
+
+  const { id } = request.params;
+  const params = [id];
+  const coments = await comentarios(id)
+
   let sql = "SELECT a.id, id_personal as cedula,"
   sql += " a.name as nombre, a.email as email, a.cellphone as celular,"
   sql += " loanPP as monto, fcreate, d.name as estado,"
@@ -149,24 +143,39 @@ admRoutes.get("/email-estado/:id", (request, response) => {
   sql += " LEFT JOIN estados_tramite d ON d.id = a.estado"
   sql += " WHERE a.id = ?"
 
-  const {
-    id
-  } = request.params;
-  const params = [id];
-
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error("Error SQL:", error.message);
       return response.status(500);
     }
     if (results && results.length > 0) {
-      response.json(results);
+      results[0].comentarios = coments
+      response.json(results)
     } else {
       response.json([]);
     }
   });
 });
 
+
+const comentarios = ( id ) => {
+  return new Promise((resolve, reject) => {
+    let sql = "SELECT a.id, a.id_prospect, a.comentario, b.name as usuario, date_format(created_to, '%d/%m/%Y %h:%i%p') fecha"
+    sql = sql + " FROM finanservs.comentarios a"
+    sql = sql + " INNER JOIN finanservs.users b on b.id=a.usuario"
+    sql = sql + " WHERE a.id_prospect = ?"
+
+    const params = [id];
+    config.cnn.query(sql, params, (error, comentes) => {
+      if (error) {
+        logger.error('Error SQL:', error.message)
+        resolve([])
+      } else {
+        resolve(comentes)
+      }
+    })
+  })
+}
 
 admRoutes.get("/sponsor/:id", (request, response) => {
   let sql = "SELECT nombre, apellidos, email, celular";
@@ -463,21 +472,31 @@ admRoutes.get('/prospects/entity_f/:entity_f/:id', (request, response) => {
   })
 })
 admRoutes.put('/prospects/estado', (request, response) => {
-  let sql = "UPDATE prospects SET estado=?, comentarios=?, ejecutivo=?, loanPP=?, plazo=?, monthlyPay=?,"
+  let sql = "UPDATE prospects SET estado=?, ejecutivo=?, loanPP=?, plazo=?, monthlyPay=?,"
   sql += "fupdate=now() WHERE id = ?"
 
-  const body = request.body
-  // console.log(body)
+  let { estado, ejecutivo, monto, plazo, letra, id, comentarios } = request.body
 
-  const params = [body.estado, body.comentarios, body.ejecutivo, body.monto, body.plazo, body.letra, body.id]
+  let params = [estado, ejecutivo, monto, plazo, letra, id]
 
-  // console.log(sql, params)
   config.cnn.query(sql, params, (error, results) => {
     if (error) {
       logger.error('Error SQL:', error.message)
       return response.status(500)
     }
-    response.send('Ok!')
+    if(comentarios.length <= 0) return response.send('Ok!')
+
+    sql = "INSERT INTO comentarios (id_prospect, comentario, usuario) VALUES (?, ?, ?)"
+
+    params = [id, comentarios, ejecutivo];
+  
+    config.cnn.query(sql, params, (error, results, next) => {
+      if (error) {
+        logger.error('Error SQL:', error.message)
+        return response.status(500)
+      }
+      response.send('Ok!')
+    })
   })
 })
 
@@ -620,6 +639,29 @@ admRoutes.put('/prospects/update', (request, response) => {
   ]
 
   config.cnn.query(sql, params, (error, results) => {
+    if (error) {
+      logger.error('Error SQL:', error.message)
+      return response.status(500)
+    }
+    response.send('Ok!')
+  })
+})
+
+
+admRoutes.get('/comentario/:id_prospect', async(request, response) => {
+  
+  const id = [request.params.id_prospect];
+  const results = await comentarios(id)
+  response.json(results)
+  
+})
+admRoutes.post('/comentario', (request, response) => {
+  const sql = "INSERT INTO comentarios (id_prospect, comentario, usuario) VALUES (?, ?, ?)"
+
+  const { id_prospect, comentario, usuario } = request.body
+  const params = [id_prospect, comentario, usuario];
+
+  config.cnn.query(sql, params, (error, results, next) => {
     if (error) {
       logger.error('Error SQL:', error.message)
       return response.status(500)
